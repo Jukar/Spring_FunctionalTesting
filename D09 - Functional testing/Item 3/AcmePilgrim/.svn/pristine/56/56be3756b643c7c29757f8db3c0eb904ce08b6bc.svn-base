@@ -1,0 +1,13 @@
+package repositories;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+
+import domain.Landmark;
+
+@Repository
+public interface LandmarkRepository extends JpaRepository<Landmark,Integer>{
+	@Query("select size(s.landmarks) from Stage s")
+	Integer getTotal();
+}

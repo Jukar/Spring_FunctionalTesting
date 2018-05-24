@@ -1,0 +1,147 @@
+package domain;
+
+import java.util.Collection;
+
+import javax.persistence.Access;
+import javax.persistence.AccessType;
+import javax.persistence.Entity;
+import javax.persistence.ManyToOne;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.validation.Valid;
+import javax.validation.constraints.Min;
+
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.SafeHtml;
+import org.hibernate.validator.constraints.SafeHtml.WhiteListType;
+
+@Entity
+@Access(AccessType.PROPERTY)
+public class Lodge extends DomainEntity{
+	
+	// Attributes ----------------------------------------------------
+	
+	private String name;
+	private String address;
+	private GPS coordinates;
+	private String webSite;
+	private String contactPhone;
+	private String lodgDescription;
+	private int numberBeds;
+	private Money pricePerNight;
+	
+	// Getters&Setters ----------------------------------------------------
+	
+	@NotBlank
+	@SafeHtml(whitelistType=WhiteListType.NONE)
+	public String getName() {
+		return name;
+	}
+	public void setName(String name) {
+		this.name = name;
+	}
+	
+	@NotBlank
+	@SafeHtml(whitelistType=WhiteListType.NONE)
+	public String getAddress() {
+		return address;
+	}
+	public void setAddress(String address) {
+		this.address = address;
+	}
+	
+	@Valid
+	public GPS getCoordinates() {
+		return coordinates;
+	}
+	public void setCoordinates(GPS coordinates) {
+		this.coordinates = coordinates;
+	}
+	
+	@SafeHtml(whitelistType=WhiteListType.NONE)
+	public String getWebSite() {
+		return webSite;
+	}
+	public void setWebSite(String webSite) {
+		this.webSite = webSite;
+	}
+	
+	@NotBlank
+	@SafeHtml(whitelistType=WhiteListType.NONE)
+	public String getContactPhone() {
+		return contactPhone;
+	}
+	public void setContactPhone(String contactPhone) {
+		this.contactPhone = contactPhone;
+	}
+	
+	@NotBlank
+	@SafeHtml(whitelistType=WhiteListType.NONE)
+	public String getLodgDescription() {
+		return lodgDescription;
+	}
+	public void setLodgDescription(String lodgDescription) {
+		this.lodgDescription = lodgDescription;
+	}
+	
+	@Min(1)
+	public int getNumberBeds() {
+		return numberBeds;
+	}
+	public void setNumberBeds(int numberBeds) {
+		this.numberBeds = numberBeds;
+	}
+	
+	@Valid
+	public Money getPricePerNight() {
+		return pricePerNight;
+	}
+	public void setPricePerNight(Money pricePerNight) {
+		this.pricePerNight = pricePerNight;
+	}
+	
+	// Relationships ----------------------------------------------------
+	
+	private Innkeeper innkeeper;
+	private Collection<Booking> booking;
+	private Stage stage;
+	private Request request;
+	
+	@Valid
+	@ManyToOne(optional = false)
+	public Innkeeper getInnkeeper() {
+		return innkeeper;
+	}
+	public void setInnkeeper(Innkeeper innkeeper) {
+		this.innkeeper = innkeeper;
+	}
+	
+	@Valid
+	@OneToMany(mappedBy = "lodge")
+	public Collection<Booking> getBooking() {
+		return booking;
+	}
+	public void setBooking(Collection<Booking> booking) {
+		this.booking = booking;
+	}
+	
+	@Valid
+	@ManyToOne(optional = false)
+	public Stage getStage() {
+		return stage;
+	}
+	public void setStage(Stage stage) {
+		this.stage = stage;
+	}
+	
+	@Valid
+	@OneToOne(optional = true, mappedBy="lodge")
+	public Request getRequest() {
+		return request;
+	}
+	public void setRequest(Request request) {
+		this.request = request;
+	}
+	
+	
+}

@@ -1,0 +1,155 @@
+package services;
+
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.util.Assert;
+
+import domain.Actor;
+import domain.GPS;
+import domain.Landmark;
+import domain.Stage;
+
+import security.LoginService;
+import security.UserAccount;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class LandmarkServiceTest extends AbstractTest{
+	@Autowired
+	private LandmarkService landmarkService;
+	@Autowired
+	private StageService stageService;
+	@Autowired
+	private ActorService actorService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	@Test
+	public void testFindOne(){
+		Landmark landM;
+		
+		landM=landmarkService.findOne(90);
+		Assert.isTrue(landM.getStage().getId()==46);
+	}
+	@Test
+	public void testFindAll(){
+		Collection<Landmark> all;
+		
+		all=landmarkService.findAll();
+		Assert.isTrue(all.size()==2);
+	}
+	@Test
+	public void testByStage(){
+		Collection<Landmark> all;
+		
+		all=landmarkService.findByStage(46);
+		Assert.isTrue(all.size()==1);
+	}
+	@Test
+	public void testByActor(){
+		Collection<Landmark> all;
+		
+		all=landmarkService.findByActor(43);
+		Assert.isTrue(all.size()==1);
+	}
+	@Test
+	public void testGetTotal(){
+		//TODO Ver este método, ¿qué hace?
+	}
+	@Test
+	public void testAvgPerRoute(){
+		//TODO ¿Esto como se comprueba?
+	}
+	@Test
+	public void testCreateAndSave(){
+		authenticate("customer2");
+		
+		Stage stage=stageService.findOne(46);
+		GPS location=new GPS();
+		location.setDescription("location");
+		location.setLatitude(1.0);
+		location.setLongitude(1.0);
+		location.setAltitude(1.0);
+		location.setTitle("title");
+		
+		Landmark l=landmarkService.create();
+		l.setName("Probando");
+		l.setLndDescription("Description");
+		l.setLocation(location);
+		l.setStage(stage);
+
+		landmarkService.save(l);
+		
+		authenticate(null);
+	}
+
+	@Test
+	public void testDelete(){
+		authenticate("keeper1");
+		
+		Landmark l=landmarkService.findOne(90);
+		landmarkService.delete(l);
+		
+		authenticate(null);
+	}
+	
+	
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	@Test(expected=DuplicateKeyException.class)
+	public void testSaveDuplicateLandmark(){
+		authenticate("customer2");
+		
+		Stage stage=stageService.findOne(46);
+		GPS location=new GPS();
+		location.setDescription("location");
+		location.setLatitude(1.0);
+		location.setLongitude(1.0);
+		location.setAltitude(1.0);
+		location.setTitle("title");
+		
+		Landmark l=landmarkService.create();
+		l.setName("Probando");
+		l.setLndDescription("Description");
+		l.setLocation(location);
+		l.setStage(stage);
+
+		landmarkService.save(l);
+		landmarkService.save(l);
+		
+		authenticate(null);
+	}
+	@Test(expected=IllegalArgumentException.class)
+	public void testByStageNull(){
+		Collection<Landmark> all;
+		
+		all=landmarkService.findByStage(48);
+		Assert.isTrue(all.size()==1);
+	}
+	@Test(expected=IllegalArgumentException.class)
+	public void testDeleteWithoutUserAccount(){
+		authenticate("keeper2");
+		
+		Landmark l=landmarkService.findOne(90);
+		landmarkService.delete(l);
+		
+		authenticate(null);
+	}
+}

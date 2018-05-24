@@ -1,0 +1,63 @@
+package controllers.innkeeper;
+
+import java.util.Collection;
+
+import org.jboss.logging.annotations.Param;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+import services.BookingService;
+
+import controllers.AbstractController;
+import domain.Booking;
+import domain.Innkeeper;
+import domain.Pilgrim;
+import domain.Request;
+
+@Controller
+@RequestMapping("/booking/innkeeper")
+public class BookingInkeeperController extends AbstractController{
+	//Services-----------------------
+	@Autowired
+	private BookingService bookingService;
+	//Listing------------------------
+	@RequestMapping("/list")
+	public ModelAndView listAll() {
+		ModelAndView result;
+		
+		Collection<Booking> bookings;
+		
+		Innkeeper innkeeper = bookingService.getInnkeeper();
+		
+		bookings=bookingService.findBookingByInnkeeper(innkeeper.getId());
+		
+		result = new ModelAndView("booking/innkeeper/list");
+		result.addObject("bookings",bookings);
+		String requestURI="booking/innkeeper/list.do";
+		result.addObject("requestURI", requestURI);
+		
+		return result;
+	}
+	// Creation -----------------------------------------------------------
+	//	Save ------------------------------------------------------------
+	//	Edition ---------------------------------------------------------------
+	// Ancillary methods
+	
+	@RequestMapping("/listByLodge")
+	public ModelAndView listAll(@Param int lodgeId) {
+		ModelAndView result;
+		
+		Collection<Booking> bookings;
+		
+		bookings= bookingService.findByLodge(lodgeId);
+		
+		result = new ModelAndView("booking/innkeeper/list");
+		result.addObject("bookings",bookings);
+		String requestURI="booking/innkeeper/listByLodge.do";
+		result.addObject("requestURI", requestURI);
+		
+		return result;
+	}
+}

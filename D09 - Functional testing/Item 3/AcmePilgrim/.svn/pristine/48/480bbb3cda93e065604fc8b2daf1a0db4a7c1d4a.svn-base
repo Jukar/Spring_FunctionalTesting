@@ -1,0 +1,23 @@
+package services;
+
+import security.UserAccount;
+import domain.Innkeeper;
+import domain.Lodge;
+
+public class InnkeeperService {
+
+	public Innkeeper findByUserAccount(UserAccount userAccount) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+	public void save(Innkeeper innkeeper) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public Innkeeper findByLodge (Lodge lodge){
+		// TODO Auto-generated method stub
+		return null;
+	}
+}

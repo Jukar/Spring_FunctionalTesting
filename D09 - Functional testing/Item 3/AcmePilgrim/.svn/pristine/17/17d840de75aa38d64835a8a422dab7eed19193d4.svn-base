@@ -1,0 +1,58 @@
+package services;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import domain.Administrator;
+
+import security.LoginService;
+import security.UserAccount;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class AdministratorServiceTest extends AbstractTest{
+	@Autowired
+	private AdministratorService administratorService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as an administrator must be able to:
+	//View his or her profile, which consists of the personal information 
+	//that Acme Pilgrim, Inc. stores about him or her.
+	//With an existing administrator, we will check that he can watch his own profile
+	@Test
+	public void testFindByUser(){
+		authenticate("admin1");
+		UserAccount userAccount=LoginService.getPrincipal();
+		Administrator admin=administratorService.findByUserAccount(userAccount);
+		Assert.isTrue(admin.getName().equals("adminName1"));
+		authenticate(null);
+	}
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as an administrator must be able to:
+	//View his or her profile, which consists of the personal information 
+	//that Acme Pilgrim, Inc. stores about him or her.
+	//With an existing administrator, we will try to obtain a wrong administrator and catch the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testFindByUserException(){
+		authenticate("admin2");
+		UserAccount userAccount=LoginService.getPrincipal();
+		Administrator admin=administratorService.findByUserAccount(userAccount);
+		Assert.isTrue(admin.getName().equals("adminName1"));
+		authenticate(null);
+	}
+}

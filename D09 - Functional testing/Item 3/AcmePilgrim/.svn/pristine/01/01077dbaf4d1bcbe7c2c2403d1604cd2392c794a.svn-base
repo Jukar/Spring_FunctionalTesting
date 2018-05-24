@@ -1,0 +1,184 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+
+import com.mchange.util.DuplicateElementException;
+
+import domain.Complaint;
+import domain.GPS;
+import domain.Route;
+import domain.Stage;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class StageServiceTest extends AbstractTest{
+
+	// ------------------- Supporting services -------------------
+	
+	@Autowired
+	private StageService stageService;
+	@Autowired
+	private RouteService routeService;
+
+	// ------------------- Service under test --------------------
+// All users can	-List the routes and navigate through their stages.
+	@Test
+	public void listStageRouteAdmin(){
+		authenticate("admin1");
+		List<Route> routes= (List<Route>) routeService.activeRoutes();
+		Collection<Stage> stages=stageService.findByRouteId(routes.get(0).getId());
+		authenticate(null);
+	}
+	@Test
+	public void listStageRouteInkeeper(){
+		authenticate("keeper1");
+		List<Route> routes= (List<Route>) routeService.activeRoutes();
+		Collection<Stage> stages=stageService.findByRouteId(routes.get(0).getId());
+		authenticate(null);
+	}
+	
+//A user who is authenticated as an administrator must be able to:
+// -Manage stages, which includes creating
+	//Trying with an Admin
+	@Test
+	public void testCreateAdmin(){
+		authenticate("admin1");
+		Stage stage=stageService.create();
+		
+		GPS origin = new GPS();
+		origin.setTitle("asadads");
+		origin.setDescription("asadads");
+		origin.setLongitude(2.8);
+		origin.setLatitude(3.0);
+		
+		GPS destination= new GPS();
+		destination.setTitle("asadadasdas");
+		destination.setDescription("asadaadadds");
+		destination.setLongitude(2.8);
+		destination.setLatitude(4.0);
+		destination.setAltitude(1.0);
+
+		stage.setName("aasdasadada");
+		stage.setDescription("aasdasadada");
+		stage.setOrigin(origin);
+		stage.setDestination(destination);
+		stage.setLenghtKm(5.0);
+		stage.setDifficultyLevel(7);
+		stage.setBriefTextDescription("zdfsfasfafafwa");
+		
+		stageService.save(stage);
+		authenticate(null);
+	}
+	//Trying with an Pilgrim
+	@Test(expected= IllegalArgumentException.class)
+	public void testCreatePilgrim(){
+		authenticate("customer1");
+		Stage stage=stageService.create();
+		
+		GPS origin = new GPS();
+		origin.setTitle("asadads");
+		origin.setDescription("asadads");
+		origin.setLongitude(2.8);
+		origin.setLatitude(3.0);
+		
+		GPS destination= new GPS();
+		destination.setTitle("asadadasdas");
+		destination.setDescription("asadaadadds");
+		destination.setLongitude(2.8);
+		destination.setLatitude(4.0);
+		destination.setAltitude(1.0);
+
+		stage.setName("aasdasadada");
+		stage.setDescription("aasdasadada");
+		stage.setOrigin(origin);
+		stage.setDestination(destination);
+		stage.setLenghtKm(5.0);
+		stage.setDifficultyLevel(7);
+		stage.setBriefTextDescription("zdfsfasfafafwa");
+		
+		stageService.save(stage);
+		authenticate(null);
+	}
+
+//Manage: listing ^Up
+//Manage: modifying
+	//Trying with an Admin
+	@Test
+	public void testModifyingAdmin(){
+		authenticate("admin1");
+		Stage stage=stageService.findOne(48);
+		stage.setName("aasdasadada");		
+		stageService.save(stage);
+		authenticate(null);
+	}
+	//Trying with an Pilgrim
+	@Test(expected= IllegalArgumentException.class)
+	public void testModifyingPilgrim(){
+		authenticate("customer1");
+		Stage stage=stageService.findOne(48);
+		stage.setName("aasdasadada");		
+		stageService.save(stage);
+		authenticate(null);
+	}	
+//Manage: deleting	
+	//Trying with an Admin
+	@Test(expected= IllegalArgumentException.class)
+	public void testDeleteAdminWithRelations(){
+		authenticate("admin1");
+		Stage stage=stageService.findOne(48);		
+		stageService.delete(stage);
+		authenticate(null);
+	}
+	//Trying with an Pilgrim
+	@Test(expected= IllegalArgumentException.class)
+	public void testDeletePilgrim(){
+		authenticate("customer1");
+		Stage stage=stageService.findOne(48);	
+		stageService.delete(stage);
+		authenticate(null);
+	}		
+	
+	
+// -List of stages, in ascending order of average rating.
+	@Test
+	public void listStageAvrRatAdmin(){
+		authenticate("admin1");
+		Collection<Stage> stages=stageService.getStagesByAVG();
+		authenticate(null);
+	}
+	@Test(expected= IllegalArgumentException.class)
+	public void listStageAvrRatInkeeper(){
+		authenticate("keeper1");
+		Collection<Stage> stages=stageService.getStagesByAVG();
+		authenticate(null);
+	}
+//A user who is authenticated as an pilgrim must be able to:
+// -List of pending stages, including the lodges that he or she's booked.
+//	@Test
+//	public void listPendingStagePilgrim(){
+//		authenticate("customer1");
+//		Collection<Stage> stages=stageService.;
+//		authenticate(null);
+//	}
+//	@Test(expected= IllegalArgumentException.class)
+//	public void listPendingStageInkeeper(){
+//		authenticate("keeper1");
+//		Collection<Stage> stages=stageService.getStagesByAVG();
+//		authenticate(null);
+//	}
+}

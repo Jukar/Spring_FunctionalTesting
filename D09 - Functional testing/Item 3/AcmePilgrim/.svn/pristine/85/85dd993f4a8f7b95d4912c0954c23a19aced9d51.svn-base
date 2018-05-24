@@ -1,0 +1,37 @@
+# messages_es.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+lodge.name			= Nombre
+lodge.description	= Descripción
+lodge.stage			= Etapa
+lodge.address		= Dirección
+lodge.webSite		= Sitio web
+lodge.contactPhone	= Telefono de contacto
+lodge.numberBeds	= Numero de camas
+lodge.pricePerNight	= Precio por noche
+
+lodge.coordinates.title			= Titulo de Coordenadas
+lodge.coordinates.description	= Descripcion de Coordenadas
+lodge.coordinates.longitude		= Longitud Coordenadas
+lodge.coordinates.latitude		= Latitud Coordenadas
+lodge.coordinates.altitude		= Altitud Coordenadas
+
+lodge.save			= Guardar
+lodge.delete		= Borrar
+lodge.cancel		= Cancelar
+lodge.commit.error	= Error de commit
+
+lodge.actions		= Acciones
+lodge.innkeeper		= Posadero
+lodge.edit			= Editar
+lodge.requestNew	= Nueva solicitud
+lodge.requestEdit	= Editar Solicitud
+lodge.publish		= Publicar
+lodge.create		= Crear
+lodge.book			= Reserva
+lodge.bookings		= Reservas

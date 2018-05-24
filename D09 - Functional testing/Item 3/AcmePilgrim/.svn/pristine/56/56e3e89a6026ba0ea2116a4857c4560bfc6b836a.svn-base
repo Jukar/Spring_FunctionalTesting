@@ -1,0 +1,273 @@
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import domain.Booking;
+import domain.Innkeeper;
+import domain.Invoice;
+import domain.Money;
+import domain.Pilgrim;
+
+import security.LoginService;
+import security.UserAccount;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class InvoiceServiceTest extends AbstractTest{
+	@Autowired
+	private InvoiceService invoiceService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	@Autowired
+	private BookingService bookingService;
+	@Autowired
+	private InnkeeperService innkeeperService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as a pilgrim must be able to:
+	//List the invoices that correspond to his or her bookings.
+	//With an existing pilgrim we will try to list all of his invoice
+	@Test
+	public void testAllInvoicesPilgrim(){
+		authenticate("customer0");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Pilgrim p=pilgrimService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByPilgrim(p.getId());
+		Assert.isTrue(all.size()==1);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as a pilgrim must be able to:
+	//List the invoices that he or she has not paid, yet.
+	//With an existing pilgrim we will try to list all of his invoice
+	@Test
+	public void testAllUnpaidInvoicesPilgrim(){
+		authenticate("customer0");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Pilgrim p=pilgrimService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByPilgrimNotPaid(p.getId());
+		Assert.isTrue(all.size()==0);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as a pilgrim must be able to:
+	//Register a payment for a booking.
+	//With an existing pilgrim we will register a paid moment for his unpaid invoice, so
+	//the booking will be paid then.
+	@Test
+	public void testPayAnInvoices(){
+		authenticate("customer1");
+		
+		Invoice invoice=invoiceService.findOne(101);
+		invoice.setPaidMoment(new Date());
+		invoiceService.save(invoice);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as an innkeeper must be able to:
+	//List the invoices that correspond to his or her lodges.
+	//With an existing innkeeper, we will try to list all of his invoices
+	@Test
+	public void testAllInvoicesKeeper(){
+		authenticate("keeper1");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Innkeeper i=innkeeperService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByKeeper(i.getId());
+		Assert.isTrue(all.size()==2);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as an innkeeper must be able to:
+	//List the unpaid invoices that correspond to his or her lodges.
+	//With an existing innkeeper, we will try to list all of his unpaid invoices
+	@Test
+	public void testAllUnpaidInvoicesKeeper(){
+		authenticate("keeper2");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Innkeeper i=innkeeperService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByKeeperNotPaid(i.getId());
+		Assert.notNull(all.size()==1);
+		
+		authenticate(null);
+	}
+	
+	
+	//A user who is authenticated as an innkeeper must be able to:
+	//Create and associate an invoice with a booking.
+	//With an existing innkeeper, we will try to create a new invoice
+	@Test
+	public void testCreateInvoice(){
+		authenticate("keeper1");
+		
+		Booking booking=bookingService.findOne(98);
+		Invoice invoice=invoiceService.create();
+		invoice.setBooking(booking);
+		invoice.setComment("blabla");
+		invoice.setDescription("description");
+		Money totalC=new Money();
+		totalC.setCurrency("eur");
+		totalC.setValue(12.5);
+		invoice.setTotalCost(totalC);
+		invoiceService.save(invoice);
+		
+		authenticate(null);
+	}
+	
+	
+	//A user who is authenticated as an administrator must be able to:
+	//List the invoices that have not been paid by a pilgrim.
+	//With an existing administrator, we will list all unpaid invoices by a pilgrim
+	@Test
+	public void testAllUnpaidInvoicesPilgrimAdmin(){
+		authenticate("admin1");
+		
+		Collection<Invoice> all=invoiceService.findByPilgrimNotPaid(20);
+		Assert.isTrue(all.size()==1);
+		
+		authenticate(null);
+	}
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as a pilgrim must be able to:
+	//List the invoices that correspond to his or her bookings.
+	//With an existing innkeeper we will try to list all of his invoice and capture 
+	//the exception
+	@Test(expected=NullPointerException.class)
+	public void testAllInvoicesPilgrimException(){
+		authenticate("keeper1");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Pilgrim p=pilgrimService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByPilgrim(p.getId());
+		Assert.isTrue(all.size()==1);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as a pilgrim must be able to:
+	//List the invoices that he or she has not paid, yet.
+	//With an existing innkeeper we will try to list all of his invoice and capture the
+	//exception
+	@Test(expected=NullPointerException.class)
+	public void testAllUnpaidInvoicesPilgrimException(){
+		authenticate("keeper1");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Pilgrim p=pilgrimService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByPilgrimNotPaid(p.getId());
+		Assert.isTrue(all.size()==0);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as a pilgrim must be able to:
+	//Register a payment for a booking.
+	//With an existing administrator we will register a wrong paid moment for his unpaid invoice
+	//and try to capture the exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testPayAnInvoicesException(){
+		authenticate("admin1");
+		
+		Invoice invoice=invoiceService.findOne(101);
+		Date d=new Date(System.currentTimeMillis()-1);
+		invoice.setPaidMoment(d);
+		invoiceService.save(invoice);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as an innkeeper must be able to:
+	//List the invoices that correspond to his or her lodges.
+	//With an existing pilgrim, we will try to list all of his invoices and capture 
+	//the exception
+	@Test(expected=NullPointerException.class)
+	public void testAllInvoicesKeeperException(){
+		authenticate("customer0");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Innkeeper i=innkeeperService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByKeeper(i.getId());
+		Assert.isTrue(all.size()==2);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as an innkeeper must be able to:
+	//List the unpaid invoices that correspond to his or her lodges.
+	//With an existing pilgrim, we will try to list all of his unpaid invoices
+	//and capture the exception
+	@Test(expected=NullPointerException.class)
+	public void testAllUnpaidInvoicesKeeperException(){
+		authenticate("customer0");
+		
+		UserAccount user=LoginService.getPrincipal();
+		Innkeeper i=innkeeperService.findByUserAccount(user);
+		Collection<Invoice> all=invoiceService.findByKeeperNotPaid(i.getId());
+		Assert.notNull(all.size()==1);
+		
+		authenticate(null);
+	}
+	
+	
+	//A user who is authenticated as an innkeeper must be able to:
+	//Create and associate an invoice with a booking.
+	//With an existing pilgrim, we will try to create a new invoice and capture the 
+	//exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateInvoiceException(){
+		authenticate("customer0");
+		
+		Booking booking=bookingService.findOne(98);
+		Invoice invoice=invoiceService.create();
+		invoice.setBooking(booking);
+		invoice.setComment("blabla");
+		invoice.setDescription("description");
+		Money totalC=new Money();
+		totalC.setCurrency("eur");
+		totalC.setValue(12.5);
+		invoice.setTotalCost(totalC);
+		invoiceService.save(invoice);
+		
+		authenticate(null);
+	}
+	
+	
+	//A user who is authenticated as an administrator must be able to:
+	//List the invoices that have not been paid by a pilgrim.
+	//With an existing innkeeper, we will list all unpaid invoices by a pilgrim
+	@Test(expected=IllegalArgumentException.class)
+	public void testAllUnpaidInvoicesPilgrimAdminException(){
+		authenticate("keeper1");
+		
+		Collection<Invoice> all=invoiceService.findByPilgrimNotPaid(20);
+		Assert.isTrue(all.size()==1);
+		
+		authenticate(null);
+	}
+}

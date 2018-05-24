@@ -1,0 +1,118 @@
+package controllers.administrator;
+
+import java.util.Collection;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.servlet.ModelAndView;
+
+import services.AnecdoteService;
+import services.ComplaintService;
+import services.InnkeeperService;
+import services.LodgeService;
+import services.PilgrimService;
+import services.RouteService;
+import services.StageService;
+
+import controllers.AbstractController;
+import domain.Innkeeper;
+import domain.Lodge;
+import domain.Pilgrim;
+import domain.Route;
+import domain.Stage;
+
+@Controller
+@RequestMapping("/administrator")
+public class DashboardAdministratorController extends AbstractController{
+	
+	//Services-----------------------
+	@Autowired
+	private RouteService routeService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	@Autowired
+	private ComplaintService complaintService;
+	@Autowired
+	private AnecdoteService anecdoteService;
+	@Autowired
+	private InnkeeperService innkeeperService;
+	@Autowired
+	private LodgeService lodgeService;
+	@Autowired
+	private StageService stageService;
+	
+	//Listing------------------------
+	@RequestMapping(value="/dashboard",method=RequestMethod.GET)
+	public ModelAndView dashboard(){
+		ModelAndView result;
+		
+		//C
+		Collection<Route> routesByRegister;
+		routesByRegister=routeService.routesByRegistrationsDesc();
+		Collection<Pilgrim> pilgrimsByRegisterDesc;
+		pilgrimsByRegisterDesc=pilgrimService.listPilgrimRegistrationDesc();
+		Collection<Route> routesByVotes;
+		routesByVotes=routeService.routesByAveRatingAsc();	
+//		The list of routes, in ascending order of average rating, with an indication
+//		regarding whether they've been deleted.
+		
+		Collection<Innkeeper> keepersByLodge;
+		keepersByLodge=innkeeperService.findAllByLodgeNumberDESC();
+		Collection<Lodge> lodgesByBooking;
+		lodgesByBooking=lodgeService.lodgesOrderedByBookingsDesc();
+		Collection<Stage> stagesByAVG;
+		stagesByAVG=stageService.getStagesByAVG();
+		Collection<Pilgrim> pilgrimsByBirthday;
+		pilgrimsByBirthday=pilgrimService.listPilgrimBirthDateDesc();
+		
+		//B
+		Integer totalNumber;
+		totalNumber = anecdoteService.countAnecdotes();
+		Double averageNumber;
+		averageNumber = anecdoteService.avrAnecdotes();
+		Collection<Pilgrim> pilgrimsMoreAnecdotes;
+		pilgrimsMoreAnecdotes = pilgrimService.findPilgrimWhithMoreAnecdotes();
+		
+//		The innkeeper/s who has/have managed more bookings.
+//		The pilgrim/s who has/have made more bookings.
+//		The innkeeper/s who has/have more unpaid invoices.
+//		The pilgrim/s who has/have more unpaid invoices.
+//		The innkeeper/s who has/have earned more money.
+//		The pilgrim/s who has/have spent more money in lodges.
+		
+		//A
+		//Este pa que es?
+		Double rate=complaintService.avrComplaint();
+		//List the ratio of complaints per pilgrim.
+		
+		Collection<Pilgrim> pligrimsMoreComplaints;
+		pligrimsMoreComplaints=pilgrimService.findPilgimMoreComplaint();
+		
+//		 The total number of landmarks.
+//		 The average number of landmarks per route.
+//		 List the complaints grouped by status.		
+		
+		result=new ModelAndView("administrator/dashboard");
+		
+		//C
+		result.addObject("routesByRegister",routesByRegister);
+		result.addObject("pilgrimsByRegisterDesc",pilgrimsByRegisterDesc);
+		result.addObject("routesByVotes",routesByVotes);
+		result.addObject("keepersByLodge",keepersByLodge);
+		result.addObject("lodgesByBooking",lodgesByBooking);
+		result.addObject("stagesByAVG",stagesByAVG);
+		result.addObject("pilgrimsByBirthday",pilgrimsByBirthday);
+		
+		//B
+		result.addObject("totalNumber", totalNumber);
+		result.addObject("averageNumber",averageNumber);
+		result.addObject("pilgrimsMoreAnecdotes", pilgrimsMoreAnecdotes);
+		//A
+		result.addObject("rate",rate);
+		result.addObject("pligrimsMoreComplaints",pligrimsMoreComplaints);
+		
+		return result;
+	}
+}

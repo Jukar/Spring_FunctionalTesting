@@ -1,0 +1,111 @@
+package services;
+import java.util.Collection;
+import java.util.Date;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import domain.Anecdote;
+import domain.Route;
+
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class AnecdoteServiceTest extends AbstractTest{
+	@Autowired
+	private AnecdoteService anecdoteService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	@Autowired
+	private RouteService routeService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	@Test
+	public void testFindOne(){
+		Anecdote anecdote=anecdoteService.findOne(69);
+		Assert.isTrue(anecdote.getPilgrim().getId()==40);
+	}
+	@Test
+	public void testFindAll(){
+		Collection<Anecdote> all=anecdoteService.findAll();
+		Assert.isTrue(all.size()==3);
+	}
+	@Test
+	public void testFindByPilgrimId(){
+		Collection<Anecdote> result = anecdoteService.findByPilgrimId(40);
+		Assert.isTrue(result.size()==2);
+	}	
+	@Test
+	public void testCountAnecdotes(){
+		Integer result = anecdoteService.countAnecdotes();
+		Assert.isTrue(result==3);
+	}	
+	@Test
+	public void testAvrAnecdotes(){
+		//TODO ¿Qué valor tiene que dar?
+	}
+	@Test
+	public void testCreateAndSave(){
+		authenticate("customer2");
+		
+		Anecdote a=anecdoteService.create();
+		Route route=routeService.findOne(52);
+		
+		a.setCreationMoment(new Date());
+		a.setDescription("description");
+		a.setEventMoment(new Date(2014,10,10,10,10));
+		a.setRoute(route);
+		a.setTitle("title");
+		
+		anecdoteService.save(a);
+		authenticate(null);
+	}
+	@Test
+	public void testDelete(){
+		authenticate("customer1");
+		Anecdote a=anecdoteService.findOne(69);
+		anecdoteService.delete(a);
+		authenticate(null);
+	}
+	
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	@Test(expected=IllegalArgumentException.class)
+	public void testFindByPilgrimIdWithError(){
+		Collection<Anecdote> result = anecdoteService.findByPilgrimId(40);
+		Assert.isTrue(result.size()==4);
+	}
+	
+	@Test(expected=DuplicateKeyException.class)
+	public void testCreateAndSaveDuplicate(){
+		authenticate("customer2");
+		
+		Anecdote a=anecdoteService.create();
+		Route route=routeService.findOne(52);
+		
+		a.setCreationMoment(new Date());
+		a.setDescription("description");
+		a.setEventMoment(new Date(2014,10,10,10,10));
+		a.setRoute(route);
+		a.setTitle("title");
+		
+		anecdoteService.save(a);
+		anecdoteService.save(a);
+		authenticate(null);
+	}
+}

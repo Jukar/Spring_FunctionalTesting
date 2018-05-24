@@ -1,0 +1,196 @@
+<%@ page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+
+<%@taglib prefix="jstl"	uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@taglib prefix="security" uri="http://www.springframework.org/security/tags"%>
+<%@taglib prefix="display" uri="http://displaytag.sf.net"%>
+<%@taglib prefix="fn" uri="http://java.sun.com/jsp/jstl/functions"%>
+<%@ taglib prefix="acme" tagdir="/WEB-INF/tags" %>
+
+<!-- Booking history, including his or her assessments. -->
+ <fieldset>
+	<legend align="left">
+		<spring:message code="dashboard.bookingHistory"/>
+	</legend>
+	<display:table name="bookingHistory" id="row" requestURI="${requestURI}" pagesize="5" class="displaytag">
+		<spring:message code="booking.creationBookMoment" var="creationBookMoment"/>
+		<display:column property="creationBookMoment" title="${creationBookMoment}" sortable="true" format="{0,date,dd/MM/yyyy HH:mm}"/>
+		
+		<spring:message code="booking.arrivalDate" var="arrivalDate"/>
+		<display:column property="arrivalDate" title="${arrivalDate}" sortable="true" format="{0,date,dd/MM/yyyy HH:mm}"/>
+		
+		<spring:message code="booking.numberOfNights" var="numberOfNights"/>
+		<display:column property="numberOfNights" title="${numberOfNights}" sortable="true" />
+		
+		<spring:message code="booking.numberOfBeds" var="numberOfBeds"/>
+		<display:column property="numberOfBeds" title="${numberOfBeds}" sortable="true" />
+		
+		<spring:message code="booking.pricePerNight.value" var="value"/>
+		<display:column property="pricePerNight.value" title="${value}" sortable="true" />
+		
+		<spring:message code="booking.pricePerNight.currency" var="currency"/>
+		<display:column property="pricePerNight.currency" title="${currency}" sortable="false" />
+		
+		<spring:message code="booking.bookComments" var="bookComments"/>
+		<display:column property="bookComments" title="${bookComments}" sortable="false" />
+		
+		<spring:message code="booking.lodgeAssessment.creationMoment" var="creationMoment"/>
+		<display:column property="lodgeAssessment.creationMoment" title="${creationMoment}" format="{0,date,dd/MM/yyyy HH:mm}" sortable="true" />
+		
+		<spring:message code="booking.lodgeAssessment.locationRate" var="locationRate"/>
+		<display:column property="lodgeAssessment.locationRate" title="${locationRate}" sortable="true" />
+				
+		<spring:message code="booking.lodgeAssessment.roomsRate" var="roomsRate"/>
+		<display:column property="lodgeAssessment.roomsRate" title="${roomsRate}" sortable="true" />
+				
+		<spring:message code="booking.lodgeAssessment.serviceRate" var="serviceRate"/>
+		<display:column property="lodgeAssessment.serviceRate" title="${serviceRate}" sortable="true" />
+				
+		<spring:message code="booking.lodgeAssessment.priceRate" var="priceRate"/>
+		<display:column property="lodgeAssessment.priceRate" title="${priceRate}" sortable="true" />
+				
+		<spring:message code="booking.lodgeAssessment.comments" var="comments"/>
+		<display:column property="lodgeAssessment.comments" title="${comments}" sortable="false" />
+	</display:table>
+</fieldset>
+
+<!-- Route and stage history. -->
+ <fieldset>
+	<legend align="left">
+		<spring:message code="pilgrim.routesStages"/>
+	</legend>
+
+	<jstl:forEach items="${routesStages}" var="route" >
+		<b><spring:message code="route.name"/>:</b>
+		<jstl:out value="${route[0].name}" />
+		<br/>
+		<b><spring:message code="route.description"/>:</b>
+		<jstl:out value="${route[0].description}" />
+		<br/>
+		<b><spring:message code="route.ratingL"/>:</b>
+		<jstl:out value="${route[0].ratingL}" />
+		<br/>
+		<b><spring:message code="route.ratingD"/>:</b>
+		<jstl:out value="${route[0].ratingD}" />
+		<br/>
+		<table class="displaytag">
+			<thead>
+			<tr>
+				<th><spring:message code="stage.name"/></th>
+				<th><spring:message code="stage.origin"></spring:message></th>
+				<th><spring:message code="stage.destination"/></th>
+				<th><spring:message code="stage.lenghtKm"></spring:message></th>
+				<th><spring:message code="stage.lenghtMi"></spring:message></th>
+				<th><spring:message code="stage.difficultyLevel"></spring:message></th>
+				<th><spring:message code="stage.ratingL"></spring:message></th>
+				<th><spring:message code="stage.ratingD"></spring:message></th>
+				
+			</tr>
+			</thead>
+		
+			<tbody>
+			<jstl:forEach items="${route[1]}" var="stage">
+				<tr>
+					<td><jstl:out value="${stage.name}"/></td>
+					<td><jstl:out value="${stage.origin.title}"/></td>
+					<td><jstl:out value="${stage.destination.title}"/></td>
+					<td><jstl:out value="${stage.lenghtKm}"/></td>
+					<td><jstl:out value="${stage.lenghtMi}"/></td>
+					<td><jstl:out value="${stage.difficultyLevel}"/></td>
+					<td><jstl:out value="${stage.ratingL}"/></td>
+					<td><jstl:out value="${stage.ratingD}"/></td>
+				</tr>
+			</jstl:forEach>
+			</tbody>
+		</table>	
+	</jstl:forEach>
+</fieldset>
+<!-- List of pending stages, including the lodges that he or she's booked. -->
+ <fieldset>
+	<legend align="left">
+		<spring:message code="dashboard.findLodgesBookedAndStagesNotRated"/>
+	</legend>
+
+	<jstl:forEach items="${findLodgesBookedAndStagesNotRated}" var="stageLodge" >
+		<b><spring:message code="stage.name"/>:</b>
+		<jstl:out value="${stageLodge[0].name}" />
+		<br/>
+		<b><spring:message code="stage.origin"/>:</b>
+		<jstl:out value="${stageLodge[0].origin}" />
+		<br/>
+		<b><spring:message code="stage.destination"/>:</b>
+		<jstl:out value="${stageLodge[0].destination}" />
+		<br/>
+		<b><spring:message code="stage.lenghtKm"/>:</b>
+		<jstl:out value="${stageLodge[0].lenghtKm}" />
+		<br/>
+		<b><spring:message code="stage.lenghtMi"/>:</b>
+		<jstl:out value="${stageLodge[0].lenghtMi}" />
+		<br/>
+		<b><spring:message code="stage.difficultyLevel"/>:</b>
+		<jstl:out value="${stageLodge[0].difficultyLevel}" />
+		<br/>
+		<b><spring:message code="stage.ratingL"/>:</b>
+		<jstl:out value="${stageLodge[0].ratingL}" />
+		<br/>
+		<b><spring:message code="stage.ratingD"/>:</b>
+		<jstl:out value="${stageLodge[0].ratingD}" />
+		<br/>
+		<table class="displaytag">
+			<thead>
+			<tr>
+				<th><spring:message code="lodge.name"/></th>
+				<th><spring:message code="lodge.address"></spring:message></th>
+				<th><spring:message code="lodge.coordinates.longitude"/></th>
+				<th><spring:message code="lodge.coordinates.latitude"></spring:message></th>
+				<th><spring:message code="lodge.coordinates.altitude"></spring:message></th>
+				<th><spring:message code="lodge.webSite"></spring:message></th>
+				<th><spring:message code="lodge.contactPhone"></spring:message></th>
+				<th><spring:message code="lodge.lodgeDescription"></spring:message></th>
+				
+			</tr>
+			</thead>
+		
+			<tbody>
+			<jstl:forEach items="${stageLodge[1]}" var="lodge">
+				<tr>
+					<td><jstl:out value="${lodge.name}"/></td>
+					<td><jstl:out value="${lodge.address}"/></td>
+					<td><jstl:out value="${lodge.coordinates.longitude}"/></td>
+					<td><jstl:out value="${lodge.coordinates.latitude}"/></td>
+					<td><jstl:out value="${lodge.coordinates.altitude}"/></td>
+					<td><jstl:out value="${lodge.webSite}"/></td>
+					<td><jstl:out value="${lodge.contactPhone}"/></td>
+					<td><jstl:out value="${lodge.lodgeDescription}"/></td>
+				</tr>
+			</jstl:forEach>
+			</tbody>
+		</table>	
+	</jstl:forEach>
+</fieldset>
+<!-- List of pilgrims sorted by descending birth date. -->
+<fieldset>
+	<legend align="left">
+		<spring:message code="dashboard.pilgrim.pilgrimByBirthdayDate"/>
+	</legend>
+	<display:table name="pilgrimByBirthdayDate" id="row" requestURI="${requestURI}" pagesize="5" class="displaytag">
+		<spring:message code="pilgrim.birthDate" var="birthDate"/>
+		<display:column  property="birthDate" title="${birthDate}" format="{0,date,dd/MM/yyyy}"/>
+		
+		<spring:message code="pilgrim.name" var="name"/>
+		<display:column property="name" title="${name}" sortable="false" />
+		
+		<spring:message code="pilgrim.surname" var="surname"/>
+		<display:column property="surname" title="${surname}" sortable="false" />
+		
+		<spring:message code="pilgrim.emailAddress" var="emailAddress"/>
+		<display:column property="emailAddress" title="${emailAddress}" sortable="false" />
+		
+		<spring:message code="pilgrim.contactPhone" var="contactPhone"/>
+		<display:column property="contactPhone" title="${contactPhone}" sortable="false" />
+		
+		<spring:message code="pilgrim.nationality" var="nationality"/>
+		<display:column property="nationality" title="${nationality}" sortable="false" />
+	</display:table>
+</fieldset>

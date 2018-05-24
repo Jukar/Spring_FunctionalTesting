@@ -1,0 +1,220 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import domain.Lodge;
+import domain.Booking;
+import domain.Innkeeper;
+import domain.Pilgrim;
+import domain.Request;
+import domain.Stage;
+import forms.LodgeForm;
+import repositories.LodgeRepository;
+import security.LoginService;
+import security.UserAccount;
+import org.springframework.util.Assert;
+
+@Service
+@Transactional
+public class LodgeService {
+	
+	// ------------------- Managed repository --------------------
+	
+	@Autowired
+	private LodgeRepository lodgeRepository;
+	
+	// ------------------- Supporting services -------------------
+	
+	@Autowired
+	private InnkeeperService innkeeperService;
+	@Autowired
+	private RequestService requestService;
+	@Autowired
+	private StageService stageService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	
+	// ----------------------- Constructor -----------------------
+	
+	// ------------------- Simple CRUD methods -------------------
+	
+	public Lodge findOne(int lodgeId) {
+		return lodgeRepository.findOne(lodgeId);
+	}
+	
+	public Collection<Lodge> findAll(){
+		return lodgeRepository.findAll();
+	}
+	
+	public Lodge create(){
+		Lodge lodge = new Lodge();
+		lodge.setInnkeeper(getInnkeeper());
+		lodge.setBookings(new ArrayList<Booking>());
+		lodge.setPublished(false);
+		return lodge;
+	}
+	
+	public void save(Lodge lodge){
+		Assert.notNull(lodge);
+		Assert.isTrue(isPrincipal(lodge));
+		lodge.setPublished(false);
+		
+		Innkeeper innkeeper = getInnkeeper();
+		Collection<Lodge> lodges = innkeeper.getLodges();
+		lodges.add(lodge);
+		innkeeper.setLodges(lodges);
+		innkeeperService.save(innkeeper);
+		
+		Stage stage  = stageService.findOne(lodge.getStage().getId());
+		Assert.notNull(stage);
+		lodges = stage.getLodges();
+		lodges.add(lodge);
+		stage.setLodges(lodges);
+		stageService.save(stage);
+		
+		lodgeRepository.save(lodge);	//TODO Comprobar que no guarda duplicados
+	}
+	
+	public void delete (Lodge lodge){	//TODO cual es la politica de borrado??? Definitivo???
+		Assert.notNull(lodge);
+//		Assert.isTrue(isPrincipal(lodge));
+		lodgeRepository.delete(lodge);
+	}
+	
+	// ----------------- Other business methods ------------------
+	
+	// REPOSITORIO:
+	
+	public Collection<Lodge> findAllByStatus(String status) {
+		Collection<Lodge> result = lodgeRepository.findAllByStatus(status);
+		return (result==null) ? new ArrayList<Lodge>() : result;
+	}
+	
+	public Collection<Lodge> findAllPublished() {
+		Collection<Lodge> result = lodgeRepository.findAllPublished();
+		return (result==null) ? new ArrayList<Lodge>() : result;
+	}
+	
+	public Collection<Lodge> lodgesOrderedByBookingsDesc() {
+		Collection<Lodge> result = lodgeRepository.lodgesOrderedByBookingsDesc();
+		return (result==null) ? new ArrayList<Lodge>() : result;
+	}
+	
+	public Collection<Lodge> findByInnkeeperId(int innkeeperId) {
+		Collection<Lodge> result = lodgeRepository.findByInnkeeperId(innkeeperId);
+		return (result==null) ? new ArrayList<Lodge>() : result;
+	}
+	
+	public Collection<Lodge> findByPilgrimId(int pilgrimId){
+		Collection<Lodge> result = lodgeRepository.findByPilgrimId(pilgrimId);
+		return (result==null) ? new ArrayList<Lodge>() : result;
+	}
+	
+	public Collection<Lodge> findByPilgrim(){
+		Pilgrim pilgrim = getPilgrim();
+		return findByPilgrimId(pilgrim.getId());
+	}
+	
+	public Collection<Lodge> findByInnkeeper(){
+		Innkeeper innkeeper = getInnkeeper();
+		return findByInnkeeperId(innkeeper.getId());
+	}
+
+	// CASOS DE USO:
+	
+	public void publishLodge(int lodgeId){
+		Lodge lodge = findOne(lodgeId);
+		Request request = requestService.findByLodge(lodge.getId());
+		
+		Assert.notNull(lodge);
+		Assert.notNull(request);
+		Assert.isTrue(isPrincipal(lodge));
+		Assert.isTrue(request.getStatus()=="Accepted");
+		
+		lodge.setPublished(true);
+		lodgeRepository.save(lodge);
+	}
+	
+	public Lodge reconstruct(LodgeForm lodgeForm){
+		Lodge result;
+		
+		if(lodgeForm.getLodgeId()==0)
+			result = create();
+		else{
+			result = lodgeRepository.findOne(lodgeForm.getLodgeId());
+			
+			if(!result.getBookings().isEmpty() && lodgeForm.getStage()!=result.getStage())
+				Assert.isTrue(false, "No cambiar de Stage si existen Bookings");
+			else
+				result.setStage(lodgeForm.getStage());
+		}
+		
+		result.setName(lodgeForm.getName());
+		result.setAddress(lodgeForm.getAddress());
+		result.setCoordinates(lodgeForm.getCoordinates());
+		result.setWebSite(lodgeForm.getWebSite());
+		result.setContactPhone(lodgeForm.getContactPhone());
+		result.setLodgeDescription(lodgeForm.getLodgeDescription());
+		result.setNumberBeds(lodgeForm.getNumberBeds());
+		result.setPricePerNight(lodgeForm.getPricePerNight());
+		
+		return result;
+	}
+	
+	public LodgeForm construct(Lodge lodge){
+		LodgeForm result= new LodgeForm();
+		
+		result.setName(lodge.getName());
+		result.setAddress(lodge.getAddress());
+		result.setCoordinates(lodge.getCoordinates());
+		result.setWebSite(lodge.getWebSite());
+		result.setContactPhone(lodge.getContactPhone());
+		result.setLodgeDescription(lodge.getLodgeDescription());
+		result.setNumberBeds(lodge.getNumberBeds());
+		result.setPricePerNight(lodge.getPricePerNight());
+		result.setStage(lodge.getStage());
+		
+		result.setLodgeId(lodge.getId());
+		return result;
+	}
+	
+	// AUXILIARES:
+	
+	private Boolean isInnkeeper(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Boolean result = userAccount.getAuthorities().iterator().next().getAuthority().equals("INNKEEPER");
+		
+		return result;
+	}
+	
+	private Innkeeper getInnkeeper(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Innkeeper result = innkeeperService.findByUserAccount(userAccount);
+		Assert.notNull(result);
+		return result;
+	}
+	
+	private Pilgrim getPilgrim(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Pilgrim result = pilgrimService.findByUserAccount(userAccount);
+		Assert.notNull(result);
+		return result;
+	}
+
+	private Boolean isPrincipal(Lodge lodge){
+		Boolean result = false;
+		Assert.isTrue(isInnkeeper());
+	
+		Innkeeper innkeeper = getInnkeeper();
+		Collection<Lodge> lodges = innkeeper.getLodges();
+	
+		for(Lodge aux : lodges){
+			if(aux.getId() == lodge.getId())
+				result = true;
+		}
+		return result;
+	}
+}

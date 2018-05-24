@@ -1,0 +1,12 @@
+package services;
+
+import domain.Request;
+
+public class RequestService {
+
+	public Request findByLodge(int lodgeId) {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
+}

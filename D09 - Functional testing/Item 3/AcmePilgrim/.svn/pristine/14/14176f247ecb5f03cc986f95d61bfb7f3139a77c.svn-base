@@ -1,0 +1,272 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+
+import javax.persistence.RollbackException;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import domain.Booking;
+import domain.GPS;
+import domain.Innkeeper;
+import domain.Lodge;
+import domain.Money;
+import domain.Pilgrim;
+import domain.Request;
+import domain.Stage;
+import forms.LodgeForm;
+import repositories.StageRepository;
+import security.LoginService;
+import security.UserAccount;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@SuppressWarnings("unused")
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class LodgeServiceTest extends AbstractTest{
+	
+	// ------------------- Supporting services -------------------
+	
+	@Autowired
+	private LodgeService lodgeService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	@Autowired
+	private InnkeeperService innkeeperService;
+	@Autowired
+	private StageService stageService;
+	
+	// ------------------- Service under test --------------------
+	
+//	@Test
+//	public void testFindOneA() {
+//		int elPrimero = lodgeService.findAll().iterator().next().getId();
+//		Assert.notNull(lodgeService.findOne(elPrimero));
+//	}
+
+//	@Test
+//	public void testFindOneB() {
+//		Assert.isNull(lodgeService.findOne(0));
+//	}
+
+//	@Test
+//	public void testFindAllA(){
+//		Collection<Lodge> lodges = lodgeService.findAll();
+//		Assert.isTrue(lodges.size()==5);
+//	}
+	
+//	@Test
+//	public void testCreateAndSaveA(){
+//		authenticate("keeper1");
+//		
+//		Lodge lodge = lodgeService.create();
+//		
+//		GPS coord = new GPS();
+//		coord.setLatitude(22.1);
+//		coord.setLongitude(22.1);
+//		coord.setAltitude(22.1);
+//		coord.setDescription("testing");
+//		coord.setTitle("testing");
+//		
+//		Money money = new Money();
+//		money.setCurrency("testing");
+//		money.setValue(22.1);
+//		
+//		lodge.setName("testing");
+//		lodge.setAddress("testing");
+//		lodge.setCoordinates(coord);
+//		lodge.setWebSite("testing.test");
+//		lodge.setContactPhone("667667667");
+//		lodge.setLodgeDescription("testing");
+//		lodge.setNumberBeds(17);
+//		lodge.setPricePerNight(money);
+//		
+//		Stage stage = stageService.findAll().iterator().next();
+//		lodge.setStage(stage);
+//		
+//		lodgeService.save(lodge);
+//		Assert.isTrue(lodgeService.findAll().size()==6);
+//		
+//		unauthenticate();
+//	}
+	
+//	@Test(expected=NullPointerException.class)		// Comprobamos lo que ocurre al usar un inkeeper que no es propietario
+//	public void testCreateAndSaveB(){
+//		authenticate("keeper1");
+//		
+//		Lodge lodge = lodgeService.create();
+//		lodge.setInnkeeper(null);
+//		
+//		GPS coord = new GPS();
+//		coord.setLatitude(22.1);
+//		coord.setLongitude(22.1);
+//		coord.setAltitude(22.1);
+//		coord.setDescription("testing");
+//		coord.setTitle("testing");
+//		
+//		Money money = new Money();
+//		money.setCurrency("testing");
+//		money.setValue(22.1);
+//		
+//		lodge.setName("testing");
+//		lodge.setAddress("testing");
+//		lodge.setCoordinates(coord);
+//		lodge.setWebSite("testing.test");
+//		lodge.setContactPhone("667667667");
+//		lodge.setLodgeDescription("testing");
+//		lodge.setNumberBeds(17);
+//		lodge.setPricePerNight(money);
+//		
+//		lodgeService.save(lodge);
+//		
+//		unauthenticate();
+//	}
+
+//	@Test(expected=NullPointerException.class)		// Dato en datatype incorrecto
+//	public void testCreateAndSaveC(){
+//		authenticate("keeper1");
+//		
+//		Lodge lodge = lodgeService.create();
+//		
+//		GPS coord = new GPS();
+//		coord.setLatitude(22.1);
+//		coord.setLongitude(22.1);
+//		coord.setAltitude(null);
+//		coord.setDescription("testing");
+//		coord.setTitle("testing");
+//		
+//		Money money = new Money();
+//		money.setCurrency("testing");
+//		money.setValue(22.1);
+//		
+//		lodge.setName("testing");
+//		lodge.setAddress("testing");
+//		lodge.setCoordinates(coord);
+//		lodge.setWebSite("testing.test");
+//		lodge.setContactPhone("667667667");
+//		lodge.setLodgeDescription("testing");
+//		lodge.setNumberBeds(17);
+//		lodge.setPricePerNight(money);
+//		
+//		lodgeService.save(lodge);
+//		
+//		unauthenticate();
+//	}
+	
+	@Test(expected=NullPointerException.class)		// Dato en domain incorrecto
+	public void testCreateAndSaveD(){
+		authenticate("keeper1");
+		
+		Lodge lodge = lodgeService.create();
+		
+		GPS coord = new GPS();
+		coord.setLatitude(22.1);
+		coord.setLongitude(22.1);
+		coord.setAltitude(22.1);
+		coord.setDescription("testing");
+		coord.setTitle("testing");
+		
+		Money money = new Money();
+		money.setCurrency("testing");
+		money.setValue(22.1);
+		
+		lodge.setName("testing");
+		lodge.setAddress("testing");
+		lodge.setCoordinates(coord);
+		lodge.setWebSite("testing");
+		lodge.setContactPhone("667667667");
+		lodge.setLodgeDescription("testing");
+		lodge.setNumberBeds(17);
+		lodge.setPricePerNight(money);
+		
+		lodgeService.save(lodge);
+		
+		unauthenticate();
+	}
+	
+//	@Test
+//	public void testDelete (){
+//	}
+//	
+//	@Test
+//	public void testFindAllByStatus() {
+//		Collection<Lodge> lodges = lodgeService.findAllByStatus("Accepted");
+//		for (Lodge lodge : lodges){
+//			System.out.println("Lodge: " + lodge.getName());
+//			if(lodge.getRequest()!=null)
+//				System.out.println(" Status: " + lodge.getRequest().getStatus());
+//		}
+//	}
+//	
+//	@Test
+//	public void testFindAllPublished() {
+//		Collection<Lodge> lodges = lodgeService.findAllPublished();
+//		for (Lodge lodge : lodges)
+//			System.out.println("Lodge: " + lodge.getName() + " Published: " + lodge.getPublished());
+//	}
+//	@Test
+//	public void testLodgesOrderedByBookingsDesc() {
+//		Collection<Lodge> lodges = lodgeService.findAll();
+//		for (Lodge lodge : lodges)
+//			System.out.println("Lodge: " + lodge.getName() + " Dueño: " + lodge.getInnkeeper().getName());
+//	}
+//	@Test
+//	public void testFindByInnkeeperId() {
+//		authenticate("XXXXXX");
+//		
+//		Innkeeper innkeeper = innkeeperService.findByUserAccount(LoginService.getPrincipal());
+//		for(Lodge lodge : lodgeService.findByPilgrimId(innkeeper.getId()))
+//			System.out.println("Lodge: " + lodge.getName() + " Dueño: " + lodge.getInnkeeper().getName());
+//		
+//		authenticate(null);
+//	}
+//	@Test
+//	public Collection<Lodge> testFindByPilgrimId(int pilgrimId){
+//		authenticate("customer6");
+//		
+//		Pilgrim pilgrim = pilgrimService.findByUserAccount(LoginService.getPrincipal());
+//		for(Lodge lodge : lodgeService.findByPilgrimId(pilgrim.getId()))
+//			System.out.println("Lodge: " + lodge.getName() + " Dueño: " + lodge.getInnkeeper().getName());
+//		
+//		authenticate(null);
+//	}
+//	@Test
+//	public void testFindByPilgrim(){
+//		authenticate("customer6");
+//		
+//		for(Lodge lodge : lodgeService.findByPilgrim())
+//			System.out.println("Lodge: " + lodge.getName() + " Dueño: " + lodge.getInnkeeper().getName());
+//		
+//		authenticate(null);
+//	}
+//	@Test
+//	public Collection<Lodge> testFindByInnkeeper(){
+//		authenticate("XXXXXX");
+//		
+//		for(Lodge lodge : lodgeService.findByInnkeeper())
+//			System.out.println("Lodge: " + lodge.getName() + " Dueño: " + lodge.getInnkeeper().getName());
+//		
+//		authenticate(null);
+//	}
+//	@Test
+//	public void testPublishLodge(int lodgeId){
+//	}
+//	@Test
+//	public Lodge reconstruct(LodgeForm lodgeForm){
+//	}
+//	@Test
+//	public LodgeForm construct(Lodge lodge){
+//	}
+}

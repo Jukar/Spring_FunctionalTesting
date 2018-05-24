@@ -1,0 +1,45 @@
+# messages_es.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+stage.actions		= Acciones
+stage.details		= Detalles
+stage.name			= Nombre
+stage.description	= Descripción
+stage.ratingL		= Valoración de longitud
+stage.ratingD		= Valoración de dificultad
+stage.edit			= Editar
+stage.create		= Nueva
+stage.search		= Buscar
+stage.assess		= Evaluar Etapa
+stage.register		= Registrarse
+stage.stages		= Etapas
+
+stage.origin		= Origen
+stage.destination	= Destino
+stage.lenghtKm		= Longitud (Km)
+stage.lenghtMi		= Longitud (mi)
+stage.difficultyLevel		= Nivel de dificultad
+stage.briefTextDescription	= Breve descripcion textual
+
+stage.origin.title			= titulo de Origen
+stage.origin.description	= descripcion de Origen
+stage.origin.longitude		= longitud Origen
+stage.origin.latitude		= latitud Origen
+stage.origin.altitude		= altitud Origen
+stage.destination.title			= titulo de Destino
+stage.destination.description	= descripcion de Destino
+stage.destination.longitude		= longitud Destino
+stage.destination.latitude		= latitud Destino
+stage.destination.altitude		= altitud Destino
+
+stage.save				= Guardar
+stage.delete			= Borrar
+stage.cancel			= Cancelar
+stage.confirm.delete	= Esta seguro de que desea guardar
+
+stage.commit.error		= Error de commit

@@ -1,0 +1,233 @@
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import repositories.BookingRepository;
+import security.LoginService;
+import security.UserAccount;
+import domain.Booking;
+import domain.Innkeeper;
+import domain.Lodge;
+import domain.LodgeAssessment;
+import domain.Pilgrim;
+import forms.LodgeAssessmentForm;
+
+@Service
+@Transactional
+public class BookingService {
+	// ------------------- Managed repository --------------------
+	
+	@Autowired
+	private BookingRepository bookingRepository;
+	
+	// ------------------- Supporting services -------------------
+	
+	@Autowired
+	private PilgrimService pilgrimService;
+	@Autowired
+	private InnkeeperService innkeeperService;
+	@Autowired
+	private LodgeService lodgeService;
+	
+	// ----------------------- Constructor -----------------------
+	
+	// ------------------- Simple CRUD methods -------------------
+	
+	public Booking findOne(int bookingId){
+		return bookingRepository.findOne(bookingId);
+	}
+	
+	public Collection<Booking> findAll(){
+		return bookingRepository.findAll();
+	}
+	
+	public Booking create(){
+		UserAccount userAccount=LoginService.getPrincipal();
+		Pilgrim pilgrim = pilgrimService.findByUserAccount(userAccount);
+		Booking result = new Booking();
+		LodgeAssessment lodgeAssessment = new LodgeAssessment();
+		result.setLodgeAssessment(lodgeAssessment);
+		
+		result.setPilgrim(pilgrim);
+		return result;
+	}
+	
+	/*public void save(Booking booking){
+		Assert.notNull(booking);
+		Assert.isTrue(isPrincipalPilgrim(booking));
+		
+		Pilgrim pilgrim = getPilgrim();
+		Collection<Booking> bookings = pilgrim.getBookings();
+		bookings.add(booking);
+		pilgrim.setBookings(bookings);
+		pilgrimService.save(pilgrim);
+		
+		Lodge lodge = lodgeService.findOne(booking.getLodge().getId());
+		Assert.notNull(lodge);
+		bookings = lodge.getBookings();
+		bookings.add(booking);
+		lodge.setBookings(bookings);
+		lodgeService.save(lodge);
+		
+		bookingRepository.save(booking);
+	}*/
+	
+//	TODO Probar, borrar explicaciones
+	public void save(Booking booking){
+		Assert.notNull(booking);
+		Assert.isTrue(isPrincipalPilgrim(booking));
+		
+		
+		Pilgrim pilgrim = getPilgrim();
+		Collection<Booking> bookings = pilgrim.getBookings();
+		bookings.add(booking);
+		pilgrim.setBookings(bookings);
+		pilgrimService.save(pilgrim);
+		
+		Lodge lodge = lodgeService.findOne(booking.getLodge().getId());
+		Assert.notNull(lodge);
+		bookings = lodge.getBookings();
+		bookings.add(booking);
+		lodge.setBookings(bookings);
+		lodgeService.save(lodge);
+		
+		if(booking.getId()!=0){		// Si estamos editando un booking y modificamos algo que afecte a la reserva
+			Booking bookingDatabase = findOne(booking.getId());
+			if(bookingDatabase.getArrivalDate() != booking.getArrivalDate() || 
+					bookingDatabase.getNumberOfBeds() != booking.getNumberOfBeds() || 
+						bookingDatabase.getNumberOfNights() != booking.getNumberOfNights()){
+				lodgeService.cancelarReserva(bookingDatabase);		// Borramos la antigua
+				lodgeService.crearReserva(booking);					// Creamos la nueva
+			}
+		}else{						// Si es la primera vez que se crea el booking no existe reserva
+			lodgeService.crearReserva(booking);						// Creamos una nueva
+		}
+		
+		bookingRepository.save(booking);
+	}
+	
+//	TODO Probar
+	public void delete(Booking booking){
+		Assert.notNull(booking);
+		lodgeService.cancelarReserva(booking);
+		bookingRepository.delete(booking);
+	}
+	
+	// ----------------- Other business methods ------------------
+
+	// REPOSITORIO:
+	
+	public Collection<Booking> findByBookingAndInnkeeperId(int innKeeperId){
+		Collection<Booking> result=bookingRepository.findByBookingAndInnkeeperId(innKeeperId);
+		return result;
+	}
+	
+	public Collection<Booking> findByBookingAndPilgrimId(int pilgrimId){
+		Collection<Booking> result=bookingRepository.findByBookingAndPilgrimId(pilgrimId);
+		return result;
+	}
+	
+	public Collection<Booking> orderedByArrivalDate(int innkeeperId){
+		Collection<Booking> result = bookingRepository.findByInnkeeperIdAndOrderedByArrivalDate(innkeeperId);
+		return result;
+	}
+	
+	// CASOS DE USO:
+	
+	public Collection<Booking> dayToDayBookings(){
+		Innkeeper innkeeper = getInnkeeper();
+		Collection<Booking> result = bookingRepository.findByInnkeeperIdAndOrderedByArrivalDate(innkeeper.getId());
+		
+//		TODO AAA Pendiente, falta filtrar por día y decidir si le meto una fecha concreta como parametro en luagr
+//		de mostrar todo y complicarme la vida a tope ------> Rollo findByTag
+		
+		return result;
+	}
+	
+	public Booking reconstruct(LodgeAssessmentForm lodgeAssessmentForm){
+		Booking booking = findOne(lodgeAssessmentForm.getBookingId());
+		Assert.isNull(booking, "Nunca debe ser null");
+		
+		Assert.isTrue(new Date(booking.getArrivalDate().getTime() + booking.getNumberOfNights()*86400000)
+						.compareTo(new Date()) <=0, "No has completado la instancia, ergo, nada de LodgeAssessment");
+		
+		LodgeAssessment lodgeAssessment = booking.getLodgeAssessment();
+		
+		if(lodgeAssessmentForm.getComments()!=null)
+			lodgeAssessment.setComments(lodgeAssessmentForm.getComments());
+		if(lodgeAssessmentForm.getLocationRate()!=null)
+			lodgeAssessment.setLocationRate(lodgeAssessmentForm.getLocationRate());
+		if(lodgeAssessmentForm.getPriceRate()!=null)
+			lodgeAssessment.setPriceRate(lodgeAssessmentForm.getPriceRate());
+		if(lodgeAssessmentForm.getRoomsRate()!=null)
+			lodgeAssessment.setRoomsRate(lodgeAssessmentForm.getRoomsRate());
+		if(lodgeAssessmentForm.getServiceRate()!=null)
+			lodgeAssessment.setServiceRate(lodgeAssessmentForm.getServiceRate());
+		
+		booking.setLodgeAssessment(lodgeAssessment);
+		
+		return booking;
+	}
+	
+	public LodgeAssessmentForm constructLodgeAssessmentForm(Booking booking){
+		LodgeAssessmentForm result= new LodgeAssessmentForm();
+		
+		LodgeAssessment lodgeAssessment = booking.getLodgeAssessment();
+		if(lodgeAssessment!=null){
+			if(lodgeAssessment.getComments()!=null)
+				result.setComments(lodgeAssessment.getComments());
+			if(lodgeAssessment.getLocationRate()!=null)
+				result.setLocationRate(lodgeAssessment.getLocationRate());
+			if(lodgeAssessment.getPriceRate()!=null)
+				result.setPriceRate(lodgeAssessment.getPriceRate());
+			if(lodgeAssessment.getRoomsRate()!=null)
+				result.setRoomsRate(lodgeAssessment.getRoomsRate());
+			if(lodgeAssessment.getServiceRate()!=null)
+				result.setServiceRate(lodgeAssessment.getServiceRate());
+		}
+		
+		result.setBookingId(booking.getId());
+		return result;
+	}
+	
+	// AUXILIARES:
+	
+	private Pilgrim getPilgrim(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Pilgrim result = pilgrimService.findByUserAccount(userAccount);
+		Assert.notNull(result);
+		return result;
+	}
+	
+	private Innkeeper getInnkeeper(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Innkeeper result = innkeeperService.findByUserAccount(userAccount);
+		Assert.notNull(result);
+		return result;
+	}
+	
+	private Boolean isPilgrim(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Boolean result = userAccount.getAuthorities().iterator().next().getAuthority().equals("PILGRIM");
+		
+		return result;
+	}
+	
+	private Boolean isPrincipalPilgrim(Booking booking){
+		Boolean res = false;
+		Assert.isTrue(isPilgrim());
+		
+		Pilgrim pilgrim = getPilgrim();
+		Collection<Booking> bookings = pilgrim.getBookings();
+	
+		for(Booking aux : bookings){
+			if(aux.getId() == booking.getId())
+				res = true;
+		}
+		return res;
+	}
+}

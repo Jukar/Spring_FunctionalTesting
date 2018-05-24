@@ -1,0 +1,33 @@
+# messages.properties
+#
+# Copyright (C) 2014 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+booking.creationMoment = Creation Moment
+booking.arrivalDate	= Arrival Date
+booking.numberOfNights = Number of nights
+booking.numberOfBeds = Number of beds
+booking.pricePerNight = Price per night
+booking.comments = Comments
+booking.pricePerNight.value	= Value
+booking.pricePerNight.currency	= Currency
+booking.invoice.paidMoment = Invoice paid moment
+booking.invoice.description	= Invoice description
+booking.invoice.totalCost.value	= Total cost value
+booking.invoice.totalCost.currency	 = Total cost currency
+booking.invoice.comment	 = Invoice comment
+booking.lodge	= Lodge
+booking.bookComments = Booking comments
+
+booking.edit	= Edit
+booking.save	= Save
+booking.delete	= Delete
+booking.cancel 	= Cancel
+
+booking.edit.delete.error.time = Can't be deleted
+booking.edit.save.error = Can't be saved
+
+invoice.edit	= New invoice

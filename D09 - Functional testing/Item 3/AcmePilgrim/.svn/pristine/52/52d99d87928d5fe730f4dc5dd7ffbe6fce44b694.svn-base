@@ -1,0 +1,14 @@
+# messages.properties
+#
+# Copyright (C) 2014 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+booking.creationMoment = Creation Moment
+booking.arrivalDate	= Arrival Date
+booking.numberOfNights = Number of nights
+booking.numberOfBeds = Number of beds
+booking.pricePerNight = Price per night
+booking.comments = Comments

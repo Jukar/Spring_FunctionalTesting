@@ -1,0 +1,87 @@
+package services;
+
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import repositories.RequestRepository;
+import security.LoginService;
+import security.UserAccount;
+
+import domain.Lodge;
+import domain.Request;
+
+@Service
+@Transactional
+public class RequestService {
+	// ------------------- Managed repository --------------------
+	@Autowired
+	private RequestRepository requestRepository;
+	// ------------------- Supporting services -------------------
+	@Autowired
+	private LodgeService lodgeService;
+	// ----------------------- Constructor -----------------------
+	
+	// ------------------- Simple CRUD methods -------------------
+	public Request findOne(int requestId){
+		return requestRepository.findOne(requestId);
+	}
+	
+	public Collection<Request> findAll(){
+		return requestRepository.findAll();
+	}
+	
+	public Request create(){
+		Request result = new Request();
+		result.setStatus("NOT CONFIRMED");
+		return result;
+	}
+	
+	public void save(Request request){
+		Assert.notNull(request);
+		Assert.isTrue(isInnkeeper());
+		request.setStatus("NOT CONFIRMED");
+		
+		Lodge lodge = lodgeService.findOne(request.getLodge().getId());
+		Assert.notNull(lodge);
+		lodge.setRequest(request);
+		lodgeService.save(lodge);
+		
+		requestRepository.save(request);
+	}
+	
+	public void delete(Request request){
+		Assert.notNull(request);
+		requestRepository.delete(request);
+	}
+	// ----------------- Other business methods ------------------
+
+	public Request findByLodge(int lodgeId) {
+		Request result = requestRepository.findByLodge(lodgeId);
+		return result;
+	}
+
+	private Boolean isInnkeeper(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Boolean result = userAccount.getAuthorities().iterator().next().getAuthority().equals("INNKEEPER");
+		
+		return result;
+	}
+	
+	private Boolean isAdmin(){
+		UserAccount userAccount = LoginService.getPrincipal();
+		Boolean result = userAccount.getAuthorities().iterator().next().getAuthority().equals("ADMIN");
+		
+		return result;
+	}
+	
+	public void changeStatus(int requestId){
+		Assert.isTrue(isAdmin());
+		Request request = findOne(requestId);
+		request.setStatus("ACCEPTED");
+	}
+}

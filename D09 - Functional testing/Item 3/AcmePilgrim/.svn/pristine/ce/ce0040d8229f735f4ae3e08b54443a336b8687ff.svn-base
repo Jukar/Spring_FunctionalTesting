@@ -1,0 +1,26 @@
+# messages.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+complaint.title			 = Title
+complaint.creationMoment = Creation moment
+complaint.description	 = Description
+complaint.resolution	 = Resolution
+complaint.status		 = Status
+complaint.administrator.name	= Administrator
+complaint.cancel		 = Cancel
+complaint.save			 = Save
+complaint.actions		 = Actions
+complaint.close			 = Close
+complaint.handle		 = Handle it
+
+complaint.surecancel	 = Are you sure you want to cancell the complaint?
+complaint.create		= Create
+complaint.discuss		 = Discuss
+
+
+complaint.commit.error	 = Cannot commit operation

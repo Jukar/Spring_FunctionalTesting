@@ -1,0 +1,19 @@
+# messages_es.properties
+#
+# Copyright (C) 2014 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+
+invoice.moment				=	Creado
+invoice.description			=	Descripción
+invoice.amount				=	Cantidad
+invoice.currency			=	Divisa
+invoice.comment				=	Comentario
+invoice.save				=	Guardar
+invoice.cancel				=	Cancelar
+invoice.paidMoment			=	Pagado
+invoice.booking				=	Reserva
+invoice.pay					=	Pagar ahora

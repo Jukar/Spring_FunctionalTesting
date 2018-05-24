@@ -1,0 +1,70 @@
+package services;
+
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import domain.Actor;
+import domain.Landmark;
+
+import repositories.LandmarkRepository;
+import security.LoginService;
+import security.UserAccount;
+
+@Transactional
+@Service
+public class LandmarkService {
+	//	Managed repository -----------------------------------------	
+	@Autowired
+	private LandmarkRepository landmarkRepository;
+	//	Supporting services ----------------------------------------
+	@Autowired
+	private ActorService actorService;
+	//	Constructor ------------------------------------------------
+	//	Simple CRUD methods ----------------------------------------
+	public Landmark findOne(int landmarkId){
+		return landmarkRepository.findOne(landmarkId);
+	}
+	public Collection<Landmark> findAll(){
+		return landmarkRepository.findAll();
+	}
+	
+	public Landmark create(){
+		UserAccount userAccount=LoginService.getPrincipal();
+		Actor actor=actorService.findByUserAccount(userAccount);
+		
+		Landmark landmark=new Landmark();
+		landmark.setActor(actor);
+		return landmark;
+	}
+	
+	public void save(Landmark landmark){
+		Assert.notNull(landmark);
+		landmarkRepository.save(landmark);
+	}
+	
+	public void delete(Landmark landmark){
+		Assert.notNull(landmark);
+		landmarkRepository.delete(landmark);
+	}
+	
+	//	Other business methods -------------------------------------
+	public Integer getTotal(){
+		Integer result=landmarkRepository.getTotal();
+		return result;
+	}
+	
+	public Collection<Landmark> findByStage(int stageId){
+		Collection<Landmark> result=landmarkRepository.findByStage(stageId);
+		return result;
+	}
+	
+	public Collection<Object[]> avgperRoute(){
+		Collection<Object[]> result=landmarkRepository.avgPerRoute();
+		return result;
+	}
+}

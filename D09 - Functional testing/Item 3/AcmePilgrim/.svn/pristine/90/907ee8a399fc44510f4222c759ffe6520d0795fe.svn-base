@@ -1,0 +1,24 @@
+package services;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import repositories.LandmarkRepository;
+
+@Transactional
+@Service
+public class LandmarkService {
+	//	Managed repository -----------------------------------------	
+	@Autowired
+	private LandmarkRepository landmarkRepository;
+	//	Supporting services ----------------------------------------
+	//	Constructor ------------------------------------------------
+	//	Simple CRUD methods ----------------------------------------
+	//	Other business methods -------------------------------------
+	public Integer getTotal(){
+		Integer result=landmarkRepository.getTotal();
+		return result;
+	}
+}

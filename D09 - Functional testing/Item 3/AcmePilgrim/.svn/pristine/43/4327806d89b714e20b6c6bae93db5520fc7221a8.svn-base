@@ -1,0 +1,50 @@
+# messages.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+pilgrim.userAccount 	= User Account info
+pilgrim.userAccount.username  = User 
+pilgrim.userAccount.password  = Password
+pilgrim.personalInfo	= Personal info
+pilgrim.userAccount.confirmPassword = Confirm password
+
+pilgrim.name			= Name
+pilgrim.surname			= Surname
+pilgrim.emailAddress	= Email address
+pilgrim.contactPhone	= Contact phone
+pilgrim.url				= Url
+pilgrim.birthDate		= Birthdate
+pilgrim.nationality		= Nationality
+
+pilgrim.userAccount				= User Account
+pilgrim.userAccount.username	= Username
+pilgrim.userAccount.password	= Password
+
+pilgrim.personalInfo			= Personal info
+
+pilgrim.creditCard				= Credit card
+pilgrim.creditCard.holderName	= Holder name	
+pilgrim.creditCard.brandName	= Brand name
+pilgrim.creditCard.number		= Number
+pilgrim.creditCard.expirationMonth = Expiration month
+pilgrim.creditCard.expirationYear = Expiration year	
+pilgrim.creditCard.cvvCode 		= CVV code			
+	
+route.actions		= Actions
+route.details		= Details
+route.name			= Name
+route.description	= Description
+route.ratingL		= Lenght rating
+route.ratingD		= Difficult rating
+
+pilgrim.actions			= Actions
+pilgrim.details			= Details
+pilgrim.accepConditions = I accept the conditions of the service
+pilgrim.commit.error	= Cannot commit operation
+pilgrim.save  = Save
+pilgrim.cancel = Cancel
+pilgrim.search			= Search

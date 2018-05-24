@@ -1,0 +1,44 @@
+# messages_es.properties
+#
+# Copyright (C) 2014 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+master.page.administrator			= Administrador
+master.page.administrator.action.1	= Acción 1
+master.page.administrator.action.2	= Acción 2
+master.page.register				= Registrar
+
+master.page.pilgrim.action.1		= Acción 1
+master.page.pilgrim.action.2		= Acción 2
+
+master.page.dashboard				= Dashboard
+
+master.page.profile 				= Perfil
+master.page.profile.action.1 		= Acción 1
+master.page.profile.action.2		= Acción 2
+master.page.profile.action.3		= Acción 3
+
+master.page.route.list				= Listar
+master.page.route					= Rutas
+
+master.page.pilgrim					= Peregrinos
+master.page.pilgrim.list			= Listar
+
+master.page.registerPilgrim 		= Registrarse como peregrino
+master.page.registerAdmin			= Nuevo administrador
+
+master.page.anecdote				= Anécdotas
+master.page.anecdote.list			= Lista
+master.page.anecdote.create			= Crear
+master.page.myanecdotes				= Mis anécdotas
+
+master.page.login 					= Entrar
+master.page.logout 					= Salir
+
+master.page.complaints				= Quejas
+master.page.complaint.list			= Lista
+
+master.page.messages				= Mi correo

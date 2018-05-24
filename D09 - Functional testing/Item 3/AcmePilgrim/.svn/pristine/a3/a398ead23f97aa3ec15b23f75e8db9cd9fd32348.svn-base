@@ -1,0 +1,34 @@
+package services;
+
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import domain.Booking;
+import domain.Lodge;
+
+@Service
+@Transactional
+public class BookingService {
+	// ------------------- Managed repository --------------------
+	@Autowired
+	private BookingService bookingRepository;
+	// ------------------- Supporting services -------------------
+	// ----------------------- Constructor -----------------------
+	
+	// ------------------- Simple CRUD methods -------------------
+	
+	// ----------------- Other business methods ------------------
+	public Collection<Booking> findByBookingAndInnkeeperId(int innKeeperId){
+		Collection<Booking> result=bookingRepository.findByBookingAndInnkeeperId(innKeeperId);
+		return result;
+	}
+	
+	public Collection<Booking> findByBookingAndPilgrimId(int pilgrimId){
+		Collection<Booking> result=bookingRepository.findByBookingAndPilgrimId(pilgrimId);
+		return result;
+	}
+}

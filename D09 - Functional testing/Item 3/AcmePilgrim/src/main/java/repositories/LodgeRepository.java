@@ -1,0 +1,29 @@
+package repositories;
+
+import java.util.Collection;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import domain.Lodge;
+
+@Repository
+public interface LodgeRepository extends JpaRepository<Lodge,Integer>{
+	
+	@Query("select l from Lodge l where l.published=true")
+	Collection<Lodge> findAllPublished();
+
+	@Query("select l from Lodge l order by l.bookings.size desc")
+	Collection<Lodge> lodgesOrderedByBookingsDesc();
+	
+	@Query("select l from Lodge l join l.bookings b where b.pilgrim.id=?1")
+	Collection<Lodge> findByPilgrimId(int pilgrimId);
+	
+	@Query("select l from Lodge l where l.innkeeper.id=?1")
+	Collection<Lodge> findByInnkeeperId(int innkeeperId);
+	
+	@Query("select l from Lodge l where l.innkeeper.id=?1 order by l.pricePerNight desc")
+	Collection<Lodge> lodgesOrderedByPricesDesc(int innkeeperId);
+	
+	@Query("select l from Lodge l join l.bookings b where l.stage.id=?1 and b.pilgrim.id=?2")
+	Collection<Lodge> lodgesBookingByStage(int stageId,int pilgrimId);
+}

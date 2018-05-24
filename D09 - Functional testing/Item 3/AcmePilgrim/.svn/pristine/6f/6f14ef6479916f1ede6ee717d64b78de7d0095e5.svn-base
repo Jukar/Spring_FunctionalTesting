@@ -1,0 +1,200 @@
+package controllers.pilgrim;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import services.BookingService;
+import services.LodgeService;
+
+import controllers.AbstractController;
+import domain.Booking;
+import domain.Lodge;
+import domain.Pilgrim;
+import forms.BookingForm;
+
+@Controller
+@RequestMapping("/booking/pilgrim")
+public class BookingPilgrimController extends AbstractController{
+	//Services-----------------------
+	@Autowired
+	private BookingService bookingService;
+	@Autowired
+	private LodgeService lodgeService;
+	//Listing------------------------
+	@RequestMapping("/list")
+	public ModelAndView listAll() {
+		ModelAndView result;
+		
+		Collection<Booking> bookings;
+		Pilgrim pilgrim = bookingService.getPilgrim();
+		
+		bookings = bookingService.findByBookingAndPilgrimId(pilgrim.getId());
+		
+		result = new ModelAndView("booking/pilgrim/list");
+		result.addObject("bookings", bookings);
+		String requestURI = "booking/pilgrim/list.do";
+		result.addObject("requestURI",requestURI);
+		
+		return result;
+	}
+	// Creation -----------------------------------------------------------
+	@RequestMapping(value= "/create", method = RequestMethod.GET )
+	public ModelAndView create(){
+		ModelAndView result ; 
+		BookingForm bookingForm = new BookingForm();
+		result = createEditModelAndViewCreate(bookingForm);
+		return result;
+	}
+	
+	// Edition ---------------------------------------------------------------
+	
+	@RequestMapping(value= "/edit", method = RequestMethod.GET)
+	public ModelAndView edit(@RequestParam int bookingId){
+		ModelAndView result;
+		Booking booking;
+		
+		booking = bookingService.findOne(bookingId);
+		Assert.notNull(booking);
+		
+		BookingForm bookingForm = bookingService.constructBookingForm(booking); 
+		
+		result = createEditModelAndView(bookingForm);
+		
+		return result;
+	}
+	
+	// Save ------------------------------------------------------------
+	@RequestMapping(value= "/editUpdate", method = RequestMethod.POST, params = "save")
+	public ModelAndView save(@Valid BookingForm bookingForm, BindingResult binding){
+		ModelAndView result;
+		
+		if(binding.hasErrors()){
+			result = createEditModelAndView(bookingForm);
+		}else{
+			try{
+				Booking booking = bookingService.reconstruct(bookingForm);
+				bookingService.save(booking);
+				result = new ModelAndView("redirect:list.do");
+			}catch (Throwable oops){
+				System.out.println(oops.getMessage());
+				if(bookingForm.getArrivalDate().compareTo(new Date())<0){
+					result = createEditModelAndView(bookingForm, "booking.edit.save.error.date");
+				}else{
+					result = createEditModelAndView(bookingForm, "booking.edit.save.error");
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	@RequestMapping(value= "/edit", method = RequestMethod.POST, params = "save")
+	public ModelAndView saveCreate(@Valid BookingForm bookingForm, BindingResult binding){
+		ModelAndView result;
+		
+		if(binding.hasErrors()){
+			result = createEditModelAndView(bookingForm);
+		}else{
+			try{
+				Booking booking = bookingService.reconstruct(bookingForm);
+				bookingService.save(booking);
+				result = new ModelAndView("redirect:list.do");
+			}catch (Throwable oops){
+				System.out.println(oops.getMessage());
+				if(bookingForm.getArrivalDate().compareTo(new Date())<0){
+					result = createEditModelAndView(bookingForm, "booking.edit.save.error.date");
+				}else{
+					result = createEditModelAndView(bookingForm, "booking.edit.save.error");
+				}
+			}
+		}
+		
+		return result;
+	}
+	
+	@RequestMapping(value= "/editUpdate", method = RequestMethod.POST, params = "delete")
+	public ModelAndView delete(BookingForm bookingForm, BindingResult binding){
+		ModelAndView result;
+		Assert.notNull(bookingForm);
+		
+		try{
+			Booking booking = bookingService.reconstruct(bookingForm);
+			bookingService.delete(booking);
+			result = new ModelAndView("redirect:list.do");
+		}catch (Throwable oops){
+			System.out.println(oops);
+			System.out.println(oops.getMessage());
+			result = createEditModelAndView(bookingForm, "booking.edit.delete.error");
+		}
+	
+		return result;
+	}
+	
+	// Ancillary methods
+	private ModelAndView createEditModelAndView(BookingForm bookingForm){
+		ModelAndView result;
+		result = createEditModelAndView(bookingForm, null);
+		return result;
+	}
+	
+	private ModelAndView createEditModelAndView(BookingForm bookingForm, String message){
+		ModelAndView result;
+		Collection<Lodge>lodges = new ArrayList<Lodge>();
+		if(bookingForm.getLodge()!=null){
+			lodges.add(bookingForm.getLodge());
+			for(Lodge aux:lodgeService.findAll()){
+				if(!aux.equals(bookingForm.getLodge())){
+					lodges.add(aux);
+				}
+			}
+		}else{
+			lodges = lodgeService.findAll();
+		}
+		
+		result = new ModelAndView("booking/pilgrim/editUpdate");
+		result.addObject("lodges",lodges);
+		result.addObject("bookingForm", bookingForm);
+		result.addObject("message", message);
+		
+		return result;
+	}
+	private ModelAndView createEditModelAndViewCreate(BookingForm bookingForm){
+		ModelAndView result;
+		result = createEditModelAndViewCreate(bookingForm, null);
+		return result;
+	}
+	
+	private ModelAndView createEditModelAndViewCreate(BookingForm bookingForm, String message){
+		ModelAndView result;
+		Collection<Lodge>lodges = new ArrayList<Lodge>();
+		if(bookingForm.getLodge()!=null){
+			lodges.add(bookingForm.getLodge());
+			for(Lodge aux:lodgeService.findAll()){
+				if(!aux.equals(bookingForm.getLodge())){
+					lodges.add(aux);
+				}
+			}
+		}else{
+			lodges = lodgeService.findAll();
+		}
+		
+		result = new ModelAndView("booking/pilgrim/edit");
+		result.addObject("lodges",lodges);
+		result.addObject("bookingForm", bookingForm);
+		result.addObject("message", message);
+		
+		return result;
+	}
+}

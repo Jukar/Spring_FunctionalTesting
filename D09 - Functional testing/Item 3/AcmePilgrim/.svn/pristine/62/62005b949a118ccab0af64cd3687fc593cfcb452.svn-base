@@ -1,0 +1,165 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.encoding.Md5PasswordEncoder;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+import repositories.InnkeeperRepository;
+import security.Authority;
+import security.UserAccount;
+import domain.Booking;
+import domain.Innkeeper;
+import domain.Folder;
+import domain.Lodge;
+import forms.InnkeeperForm;
+
+@Transactional
+@Service
+public class InnkeeperService {
+
+	// ------------------- Managed repository --------------------
+	
+	@Autowired
+	private InnkeeperRepository innkeeperRepository;
+
+	// ------------------- Supporting services -------------------
+
+	@Autowired
+	private BookingService bookingService;
+	
+	// ----------------------- Constructor -----------------------
+	
+	// ------------------- Simple CRUD methods -------------------
+	
+	public Innkeeper create(){
+		
+		Authority a = new Authority();
+		a.setAuthority(Authority.INNKEEPER);
+		List<Authority> authorities = new ArrayList<Authority>();
+		authorities.add(a);
+		UserAccount userAccount = new UserAccount();
+		userAccount.setAuthorities(authorities);
+		
+		Folder inbox = new Folder();
+		Folder outbox = new Folder();
+		Folder trashbox = new Folder();
+		inbox.setName("Inbox");
+		outbox.setName("Outbox");
+		trashbox.setName("Trashbox");
+		Collection<Folder> folders = new ArrayList<Folder>();
+		folders.add(inbox);
+		folders.add(outbox);
+		folders.add(trashbox);
+		
+		Innkeeper result = new Innkeeper();
+		result.setUserAccount(userAccount);
+		result.setFolders(folders);
+		result.setLodges(new ArrayList<Lodge>());
+		
+		return result;
+	}
+	
+	public Innkeeper findOne(int innkeeperId){
+		Innkeeper result = innkeeperRepository.findOne(innkeeperId);
+		return result;
+	}
+	
+	public Collection<Innkeeper> findAll(){
+		Collection<Innkeeper> result = innkeeperRepository.findAll();
+		return result;
+	}
+	
+	public void save(Innkeeper innkeeper){
+		
+		System.out.println("ENTRA");
+		Assert.notNull(innkeeper);
+		innkeeperRepository.save(innkeeper);
+		System.out.println("SALE");
+	}
+	
+//	TODO comprobar si es necesario
+//	public void delete(Innkeeper innkeeper){
+//		innkeeperRepository.delete(innkeeper);
+//	}
+	
+	// ----------------- Other business methods ------------------
+	
+	// REPOSITORIO:
+	
+	public Innkeeper findByUserAccount(UserAccount userAccount) {
+		Innkeeper result = innkeeperRepository.findByUserAccount(userAccount.getId());
+		return result;
+	}
+	
+	public Innkeeper findByLodgeId(int lodgeId){
+		return innkeeperRepository.findByLodgeId(lodgeId);
+	}
+
+	public Collection<Innkeeper> findAllByLodgeNumberDESC(){
+		return innkeeperRepository.findAllByLodgeNumberDESC();
+	}
+	
+	public Collection<Innkeeper> findWithMoreBookings(){
+		return innkeeperRepository.findWithMoreBookings();
+	}
+	
+
+	// CASOS DE USO:
+	
+	public Collection<Innkeeper> findWithMoreMoneyEarned(){
+		Collection<Innkeeper> all=innkeeperRepository.findAll();
+		List<Innkeeper> result=new ArrayList<Innkeeper>();
+		Double maxEarned=0.0;
+		for(Innkeeper i:all){
+			Double aux=0.0;
+			Collection<Booking> lodgesWithBooking=bookingService.findByBookingAndInnkeeperId(i.getId());
+			for(Booking book:lodgesWithBooking){
+				int numBeds=book.getNumberOfBeds();
+				int numNig=book.getNumberOfNights();
+				Double pric=book.getLodge().getPricePerNight().getValue();
+				
+				aux=aux+(numBeds*numNig*pric);
+			}
+			if(aux==maxEarned) result.add(i);
+			if(aux>maxEarned){
+				result=new ArrayList<Innkeeper>();
+				result.add(i);
+			}
+		}
+		return result;
+	}
+	
+	// AUXILIARES:
+	
+	public Innkeeper reconstruct(InnkeeperForm innkeeperForm) {
+		Assert.isTrue(innkeeperForm.getPassword().equals(innkeeperForm.getConfirmPassword()));
+		Assert.isTrue(innkeeperForm.isAccepConditions());
+		
+		Innkeeper result = create();
+		UserAccount userAccount=result.getUserAccount();
+		
+		Md5PasswordEncoder encoder;		
+		encoder= new Md5PasswordEncoder();
+		String password=encoder.encodePassword(innkeeperForm.getPassword(), null);
+		
+		userAccount.setPassword(password);
+		userAccount.setUsername(innkeeperForm.getUserName());
+		
+		result.setUserAccount(userAccount);
+		result.setName(innkeeperForm.getName());
+		result.setSurname(innkeeperForm.getSurname());
+		result.setEmailAddress(innkeeperForm.getEmailAddress());
+		result.setContactPhone(innkeeperForm.getContactPhone());
+		result.setUrl(innkeeperForm.getUrl());
+		
+		result.setBirthDate(innkeeperForm.getBirthDate());
+		result.setNationality(innkeeperForm.getNationality());
+		result.setCreditCard(innkeeperForm.getCreditCard());
+		
+		return result;
+	}
+}

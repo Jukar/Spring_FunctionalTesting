@@ -1,0 +1,186 @@
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.util.Assert;
+
+import domain.Complaint;
+import domain.Discuss;
+
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class DiscussServiceTest extends AbstractTest{
+	@Autowired
+	private DiscussService discussService;
+	@Autowired
+	private ComplaintService complaintService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as a pilgrim must be able to:
+	//Comment on his or her complaints.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//With an existing pilgrim, we want to check if he can create and save a new Discuss correctly.
+	@Test
+	public void testCreateAndSavePilgrim(){
+		authenticate("customer1");
+		
+		Complaint complaint=complaintService.findOne(66);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as a innkeeper must be able to:
+	//Comment on his or her complaints.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//Note: It doesn't exist an explicit use case of innkeepers creating discuss, but we 
+	//understand that in AcmePilgrim 2.0 they may have that possibility.
+	//With an existing innkeeper, we want to check if he can create and save a new Discuss correctly.
+	@Test
+	public void testCreateAndSaveKeeper(){
+		authenticate("keeper1");
+		
+		Complaint complaint=complaintService.findOne(70);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Comment on a complaint that he or she handles.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//With an existing administrator, we want to check if he can create and save a new Discuss correctly.
+	@Test
+	public void testCreateAndSaveAdmin(){
+		authenticate("admin2");
+		
+		Complaint complaint=complaintService.findOne(66);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as a pilgrim must be able to:
+	//Comment on his or her complaints.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//With an existing pilgrim, we want to create and save a new Discuss in another's complaint
+	//and capture the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSavePilgrimException(){
+		authenticate("customer2");
+		
+		Complaint complaint=complaintService.findOne(66);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as a pilgrim must be able to:
+	//Once a complaint is cancelled, no further discussions are accepted.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//With an existing pilgrim, we want to create and save a new Discuss in a closed complaint
+	//and capture the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSavePilgrimInClosedComplaintException(){
+		authenticate("customer0");
+		
+		Complaint complaint=complaintService.findOne(62);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as a innkeeper must be able to:
+	//Comment on his or her complaints.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//Note: It doesn't exist an explicit use case of innkeepers creating discuss, but we 
+	//understand that in AcmePilgrim 2.0 they may have that possibility.
+	//With an existing innkeeper, we want to create and save a new Discuss in another's complaint
+	//and capture the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSaveKeeperException(){
+		authenticate("keeper2");
+		
+		Complaint complaint=complaintService.findOne(70);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Comment on a complaint that he or she handles.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//With an existing administrator, we want to create and save a new Discuss in another's complaint
+	//and capture the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSaveAdminException(){
+		authenticate("admin1");
+		
+		Complaint complaint=complaintService.findOne(66);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as a administrator must be able to:
+	//Once a complaint is cancelled, no further discussions are accepted.
+	//Note: In our system, comment a complaints means create a discuss on a complaint.
+	//With an existing administrator, we want to create and save a new Discuss in a closed complaint
+	//and capture the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSaveAdminInClosedComplaintException(){
+		authenticate("admin1");
+		
+		Complaint complaint=complaintService.findOne(62);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+}

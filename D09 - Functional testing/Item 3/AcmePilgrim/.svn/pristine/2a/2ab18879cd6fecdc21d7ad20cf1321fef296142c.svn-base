@@ -1,0 +1,47 @@
+# messages_es.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+dashboard.fieldset1		= Lista de rutas según número de registros
+dashboard.fieldset2		= Lista de peregrinos según registros
+dashboard.fieldset3		= Lista de rutas según número de votos
+dashboard.fieldset4		= Número total de anécdotas
+dashboard.fieldset5		= Media aritmética del número de anécdotas por peregrino
+dashboard.fieldset6		= El/Los peregrinos que ha/n publicado más anécdotas
+dashboard.fieldset7		= Media de complaints por peregrino
+dashboard.fieldset8		= Peregrinos con más quejas
+
+
+route.name				= Nombre
+route.actived			= Activo
+route.ratingL			= Puntuación de longitud
+route.ratingD			= Puntuación de dificultad
+
+pilgrim.name			= Nombre
+pilgrim.surname			= Apellidos
+pilgrim.emailAddress	= Email
+pilgrim.contactPhone	= Tlf.
+pilgrim.birthDate		= Nacimiento
+pilgrim.nacionality		= Nacionalidad
+
+administrator.personalInfo	= Información personal
+
+administrator.name			= Nombre
+administrator.surname		= Apellido/s
+administrator.emailAddress	= Correo electrónico
+administrator.contactPhone	= Teléfono de contacto
+administrator.url			= Url
+administrator.birthDate		= Fecha de nacimiento
+administrator.nationality	= Nacionalidad
+
+administrator.userAccount	= Cuenta de usuario
+administrator.userAccount.username = Usuario
+administrator.userAccount.password = Contraseña
+administrator.userAccount.confirmPassword = Confirma contraseña
+administrator.accepConditions	= Acepto las condiciones de servicio
+administrator.save			= Guardar
+administrator.cancel		= Cancelar

@@ -1,0 +1,25 @@
+package repositories;
+
+import java.util.Collection;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import security.UserAccount;
+import domain.Innkeeper;
+
+@Repository
+public interface InnkeeperRepository extends JpaRepository<Innkeeper,Integer>{
+	
+	@Query("select l.innkeeper from Lodge l where l.id == ?1")
+	Innkeeper findByLodgeId(int lodgeId);
+	
+	@Query("select i from Innkeeper i where i.userAccount=?1")
+	Innkeeper findByUserAccount(UserAccount userAccount);
+	
+	@Query("select i from Innkeeper i order by i.lodges.size desc;")
+	Collection<Innkeeper> findAllByLodgeNumberDESC();
+	
+	//TODO Pendiente para dashboard, lo dejo para mañana
+	@Query("select l.innkeeper from Lodge l where l.booking.size=(select max(l.booking.size) from Lodge l) group by l.innkeeper")
+	Collection<Innkeeper> findWithMoreBookings();
+}

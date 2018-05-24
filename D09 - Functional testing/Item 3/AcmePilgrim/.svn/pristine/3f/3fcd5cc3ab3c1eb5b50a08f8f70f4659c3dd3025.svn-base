@@ -1,0 +1,19 @@
+package repositories;
+
+import java.util.Collection;
+
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import domain.Invoice;
+
+
+@Repository
+public interface InvoiceRepository extends JpaRepository<Invoice,Integer>{
+	@Query("select i from Invoice i where i.booking.pilgrim.id=?1")
+	Collection<Invoice> findByPilgrim(int id);
+	
+	@Query("select i from Invoice i where i.booking.lodge.innkeeper.id=?1")
+	Collection<Invoice> findByKeeper(int id);
+
+}

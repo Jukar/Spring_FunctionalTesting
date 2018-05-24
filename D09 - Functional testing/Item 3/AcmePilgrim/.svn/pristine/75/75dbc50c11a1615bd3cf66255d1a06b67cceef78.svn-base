@@ -1,0 +1,32 @@
+package repositories;
+
+import java.util.Collection;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import domain.Lodge;
+
+@Repository
+public interface LodgeRepository extends JpaRepository<Lodge,Integer>{
+	
+//	TODO Creo que sobra
+	@Query("select l from Lodge l where l.request.status=?1")
+	Collection<Lodge> findAllByStatus(String status);
+	
+	@Query("select l from Lodge l where l.published=true")
+	Collection<Lodge> findAllPublished();
+
+	@Query("select l from Lodge l order by l.bookings.size desc")
+	Collection<Lodge> lodgesOrderedByBookingsDesc();
+	
+	@Query("select l from Lodge l join l.bookings b where b.pilgrim.id=?1")
+	Collection<Lodge> findByPilgrimId(int pilgrimId);
+	
+	@Query("select l from Lodge l where l.innkeeper.id=?1")
+	Collection<Lodge> findByInnkeeperId(int innkeeperId);
+	
+//	Dia 16 :S
+//	
+//	@Query("select l from Lodge l order by l.bookings.size asc")
+//	Collection<Lodge> lodgesOrderedByAverRatingAsc();
+}

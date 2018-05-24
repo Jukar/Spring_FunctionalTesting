@@ -1,0 +1,112 @@
+package controllers.pilgrim;
+
+import java.util.Collection;
+import java.util.Date;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import security.LoginService;
+import security.UserAccount;
+import services.InvoiceService;
+import services.PilgrimService;
+
+import controllers.AbstractController;
+import domain.Actor;
+import domain.Booking;
+import domain.Folder;
+import domain.Invoice;
+import domain.Landmark;
+import domain.Message;
+import domain.Pilgrim;
+import domain.Stage;
+
+@Controller
+@RequestMapping("/invoice/pilgrim")
+public class InvoicePilgrimController extends AbstractController{
+	// Services------------------------------------------------------------
+	@Autowired
+	private InvoiceService invoiceService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	// Listing-------------------------------------------------------------
+	@RequestMapping("/list")
+	public ModelAndView listAll() {
+		ModelAndView result;
+		UserAccount usAc=LoginService.getPrincipal();
+		Pilgrim you=pilgrimService.findByUserAccount(usAc);
+		
+		Collection<Invoice> invoices;
+		invoices=invoiceService.findByPilgrim(you.getId());
+		String requestURI="invoice/pilgrim/list.do";
+		
+		result = new ModelAndView("invoice/pilgrim/list");
+		result.addObject("invoices",invoices);
+		result.addObject("requestURI", requestURI);
+		return result;
+	}
+	@RequestMapping("/listUnpaid")
+	public ModelAndView listUnpaid() {
+		ModelAndView result;
+		UserAccount usAc=LoginService.getPrincipal();
+		Pilgrim you=pilgrimService.findByUserAccount(usAc);
+		
+		Collection<Invoice> invoices;
+		invoices=invoiceService.findByPilgrimNotPaid(you.getId());
+		String requestURI="invoice/pilgrim/list.do";
+		
+		result = new ModelAndView("invoice/pilgrim/list");
+		result.addObject("invoices",invoices);
+		result.addObject("requestURI", requestURI);
+		return result;
+	}
+	
+	// Creation -----------------------------------------------------------
+	// Save ---------------------------------------------------------------
+	
+    // Edition ------------------------------------------------------------
+	@RequestMapping(value="/pay", method = RequestMethod.GET)
+	public ModelAndView edit(@RequestParam int invoiceId){
+		ModelAndView result=null;
+		
+		Invoice invoice = invoiceService.findOne(invoiceId);
+		Date paidMoment = new Date(System.currentTimeMillis()-1);
+		
+		try{
+			invoice.setPaidMoment(paidMoment);
+			invoiceService.save(invoice);
+			result= new ModelAndView("redirect:list.do");
+		}catch(Throwable oops){
+			result= new ModelAndView("redirect:list.do");
+		}
+		return result;
+	}
+	
+	// Ancillary methods --------------------------------------------------
+	protected ModelAndView createEditModelAndView(Invoice invoice){
+		ModelAndView result;
+		result=createEditModelAndView(invoice,null);		
+		return result;
+	}
+			
+	protected ModelAndView createEditModelAndView(Invoice invoice, String message){
+		ModelAndView result;
+		Booking book;
+		Date moment;
+		
+		book=invoice.getBooking();
+		moment=invoice.getMoment();
+				
+		result=new ModelAndView("invoice/edit");
+		result.addObject("invoice", invoice);
+		result.addObject("book",book);
+		result.addObject("moment",moment);
+		result.addObject("requestURI","invoice/pilgrim/edit.do");
+		
+		return result;
+	}
+}

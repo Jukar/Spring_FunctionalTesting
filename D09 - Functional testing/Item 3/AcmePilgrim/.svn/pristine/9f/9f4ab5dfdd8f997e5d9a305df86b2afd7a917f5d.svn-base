@@ -1,0 +1,25 @@
+# messages_es.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+anecdote.title			= Título
+anecdote.description	= Descripción
+anecdote.creationMoment	= Momento de creación
+anecdote.pilgrim.name	= Comentado por
+anecdote.route.name		= Ruta
+anecdote.eventMoment	= Momento del evento
+anecdote.route          = Ruta
+
+anecdote.actions		= Acciones
+anecdote.edit			= Editar
+anecdote.save			= Guardar
+anecdote.cancel 		= Cancelar
+anecdote.create			= Crear
+anecdote.delete			= Borrar
+
+anecdote.edit.delete.error   = No se pudo elimninar la anécdota
+anecdote.edit.save.error	 = No se pudo guardar la anécdota

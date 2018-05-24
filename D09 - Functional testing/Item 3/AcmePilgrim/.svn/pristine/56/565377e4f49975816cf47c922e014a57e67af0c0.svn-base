@@ -1,0 +1,154 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.Assert;
+
+import domain.Innkeeper;
+
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class InnkeeperServiceTest extends AbstractTest{
+	@Autowired
+	private InnkeeperService innkeeperService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//List of innkeepers, in descending order of number of lodges managed.
+	//With an existing administrator, we want to check if he can find all the innkeepers.
+	@Test
+	public void testInnkeepersNumberOfLodges(){
+		authenticate("admin1");
+		Collection<Innkeeper> all=innkeeperService.findAllByLodgeNumberDESC();
+		List<Innkeeper> lista=new ArrayList<Innkeeper>();
+		for(Innkeeper i:all){
+			lista.add(i);
+		}
+		Innkeeper inn=lista.get(0);
+		Assert.isTrue(inn.getName().equals("Name7"));
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//The innkeeper/s who has/have managed more bookings.
+	//With an existing administrator, we want to check if he can find the innkeeper with more bookings.
+	@Test
+	public void testInnkeepersMoreBooking(){
+		authenticate("admin1");
+		Collection<Innkeeper> all=innkeeperService.findWithMoreBookings();
+		List<Innkeeper> lista=new ArrayList<Innkeeper>();
+		for(Innkeeper i:all){
+			lista.add(i);
+		}
+		Innkeeper inn=lista.get(0);
+		Assert.isTrue(inn.getName().equals("Name7"));
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//The innkeeper/s who has/have more unpaid invoices.
+	//With an existing administrator, we want to check if he can find the innkeeper with more unpaid invoices.
+	@Test
+	public void testInnkeepersMoreUnpaidInvoices(){
+		authenticate("admin1");
+		//TODO Ver cómo hacer este servicio y probarlo
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//The innkeeper/s who has/have earned more money.
+	//With an existing administrator, we want to check if he can find the innkeeper with more earned money.
+	@Test
+	public void testInnkeepersMoreMoney(){
+		authenticate("admin1");
+		Collection<Innkeeper> all=innkeeperService.findWithMoreMoneyEarned();
+		List<Innkeeper> lista=new ArrayList<Innkeeper>();
+		for(Innkeeper i:all){
+			lista.add(i);
+		}
+		Innkeeper inn=lista.get(0);
+		Assert.isTrue(inn.getName().equals("Name7"));
+		authenticate(null);
+	}
+	
+	
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//List of innkeepers, in descending order of number of lodges managed.
+	//With an existing administrator, we will try to find another innkeeper and catch the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testInnkeepersNumberOfLodgesException(){
+		authenticate("admin1");
+		Collection<Innkeeper> all=innkeeperService.findAllByLodgeNumberDESC();
+		List<Innkeeper> lista=new ArrayList<Innkeeper>();
+		for(Innkeeper i:all){
+			lista.add(i);
+		}
+		Innkeeper inn=lista.get(0);
+		Assert.isTrue(inn.getName().equals("Name8"));
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//The innkeeper/s who has/have managed more bookings.
+	//With an existing administrator, we will try to find another innkeeper and catch the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testInnkeepersMoreBookingException(){
+		authenticate("admin1");
+		Collection<Innkeeper> all=innkeeperService.findWithMoreBookings();
+		List<Innkeeper> lista=new ArrayList<Innkeeper>();
+		for(Innkeeper i:all){
+			lista.add(i);
+		}
+		Innkeeper inn=lista.get(0);
+		Assert.isTrue(inn.getName().equals("Name8"));
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//The innkeeper/s who has/have more unpaid invoices.
+	//With an existing administrator, we will try to find another innkeeper and catch the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testInnkeepersMoreUnpaidInvoicesException(){
+		authenticate("admin1");
+		//TODO Ver cómo hacer este servicio y probarlo
+		authenticate(null);
+	}
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the following information:
+	//The innkeeper/s who has/have earned more money.
+	//With an existing administrator, we will try to find another innkeeper and catch the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testInnkeepersMoreMoneyException(){
+		authenticate("admin1");
+		Collection<Innkeeper> all=innkeeperService.findWithMoreMoneyEarned();
+		List<Innkeeper> lista=new ArrayList<Innkeeper>();
+		for(Innkeeper i:all){
+			lista.add(i);
+		}
+		Innkeeper inn=lista.get(0);
+		Assert.isTrue(inn.getName().equals("Name8"));
+		authenticate(null);
+	}
+}

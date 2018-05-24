@@ -1,0 +1,121 @@
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+import javax.transaction.Transactional;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import domain.Anecdote;
+import domain.Pilgrim;
+import forms.AnecdoteForm;
+import repositories.AnecdoteRepository;
+import security.Authority;
+import security.LoginService;
+import security.UserAccount;
+import org.springframework.util.Assert;
+
+@Service
+@Transactional
+public class AnecdoteService {
+//	Managed repository -----------------------------------------
+	@Autowired
+	private AnecdoteRepository anecdoteRepository;
+//	Supporting services ----------------------------------------
+	@Autowired
+	private PilgrimService pilgrimService;
+//	Constructor ------------------------------------------------
+//	Simple CRUD methods ----------------------------------------
+	public Anecdote create(){
+		UserAccount userAccount=LoginService.getPrincipal();
+		checkPrincipal("PILGRIM");
+		Pilgrim pilgrim=pilgrimService.findByUserAccount(userAccount);
+		Anecdote result = new Anecdote();
+		
+		result.setCreationMoment(new Date(new Date().getTime()-1));
+		result.setPilgrim(pilgrim);
+		
+		return result;
+	}
+	public Anecdote findOne(int anecdoteId){
+		Assert.notNull(anecdoteId);
+		Anecdote result=anecdoteRepository.findOne(anecdoteId);
+		return result;
+	}
+	public Collection<Anecdote> findAll(){
+		Collection<Anecdote> result=anecdoteRepository.findAll();
+		return result;
+	}
+	public void save(Anecdote anecdote){
+		Assert.notNull(anecdote);
+		checkPrincipal(anecdote);
+		anecdoteRepository.save(anecdote);
+	}
+	public void delete(Anecdote anecdote){
+		Assert.notNull(anecdote);
+		checkPrincipal(anecdote);
+		anecdoteRepository.delete(anecdote);
+	}
+//	Other business methods -------------------------------------
+	public Anecdote reconstruct(AnecdoteForm anecdoteForm){
+		Anecdote result;
+		
+		if(anecdoteForm.getAnecdoteId()==null || anecdoteForm.getAnecdoteId()==0)
+			result = create();
+		else
+			result = findOne(anecdoteForm.getAnecdoteId());
+		
+		result.setTitle(anecdoteForm.getTitle());
+		result.setDescription(anecdoteForm.getDescription());
+		result.setEventMoment(anecdoteForm.getEventMoment());
+		result.setRoute(anecdoteForm.getRoute());
+		result.setCreationMoment(new Date(new Date().getTime()-10));
+		
+		return result;
+	}
+	
+	public AnecdoteForm construct(Anecdote anecdote){
+		AnecdoteForm result= new AnecdoteForm();
+		
+		result.setAnecdoteId(anecdote.getId());
+		
+		result.setTitle(anecdote.getTitle());
+		result.setDescription(anecdote.getDescription());
+		result.setEventMoment(anecdote.getEventMoment());
+		result.setRoute(anecdote.getRoute());
+		return result;
+	}
+	
+	public Collection<Anecdote> findByPilgrim(){
+		UserAccount account=LoginService.getPrincipal();
+		Pilgrim pilgrim=pilgrimService.findByUserAccount(account);
+		Collection<Anecdote> result=anecdoteRepository.findByPilgrimId(pilgrim.getId());
+		return result;
+	}
+	
+	public Integer countAnecdotes(){
+		Integer result=anecdoteRepository.countAnecdotes();
+		return result;
+	}
+	
+	public Double avrAnecdotes(){
+		Double result=anecdoteRepository.avrAnecdotes();
+		return result;
+	}
+	
+	private void checkPrincipal(Anecdote anecdote){
+		UserAccount userAccount=LoginService.getPrincipal();
+		Pilgrim pilgrim=pilgrimService.findByUserAccount(userAccount);
+		System.out.println(pilgrim.getId()==anecdote.getPilgrim().getId());
+		Assert.isTrue(pilgrim.getId()==anecdote.getPilgrim().getId());
+	}
+	
+	private void checkPrincipal(String authority) {
+		UserAccount account=LoginService.getPrincipal();
+		Collection<Authority> authorities= account.getAuthorities();
+		Boolean res=false;
+		for(Authority a:authorities){
+			if(a.getAuthority().equals(authority)) res=true;			
+		}
+		Assert.isTrue(res);
+	}
+}

@@ -1,0 +1,335 @@
+package services;
+
+import java.util.Collection;
+
+import javax.transaction.Transactional;
+import javax.validation.ConstraintViolationException;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.util.Assert;
+
+import domain.GPS;
+import domain.Innkeeper;
+import domain.Landmark;
+import domain.Pilgrim;
+import domain.Stage;
+
+import repositories.ActorRepository;
+import repositories.LandmarkRepository;
+import repositories.StageRepository;
+import security.LoginService;
+import security.UserAccount;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class LandmarkServiceTest extends AbstractTest{
+	@Autowired
+	private LandmarkService landmarkService;
+	@Autowired
+	private StageService stageService;
+	@Autowired
+	private RouteService routeService;
+	@Autowired
+	private PilgrimService pilgrimService;
+	@Autowired
+	private InnkeeperService innkeeperService;
+//	@Autowired
+//	private ActorService actorService;
+//	@Autowired
+//	private LandmarkRepository landmarkRepository;
+//	@Autowired
+//	private StageRepository stageRepository;
+//	@Autowired
+//	private ActorRepository actorRepository;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is not authenticated must be able to:
+	//List the landmarks in a stage.
+	//With an existing Stage, we want to check if it's landmarks can be find correctly.
+	@Test
+	public void testByStage(){
+		Collection<Landmark> all;
+		
+		all=landmarkService.findByStage(49);
+		Assert.isTrue(all.size()==1);
+	}
+	//A user who is authenticated as an innkeeper must be able to:
+	//List his or her landmarks.
+	//With an existing Innkeeper, we want to check if his landmarks can be find correctly.
+	@Test
+	public void testByActorKeeper(){
+		authenticate("keeper1");
+		UserAccount user=LoginService.getPrincipal();
+		Innkeeper i=innkeeperService.findByUserAccount(user);
+		
+		Collection<Landmark> all=landmarkService.findByActor(i.getId());
+		Assert.isTrue(all.size()==1);
+	}
+	//A user who is authenticated as an innkeeper must be able to:
+	//Create his or her landmarks.
+	//With an existing Innkeeper, we want to check if he can create and save a new Landmark correctly.
+	@Test
+	public void testCreateAndSaveKeeper(){
+		authenticate("keeper1");
+		
+		Stage stage=stageService.findOne(46);
+		GPS location=new GPS();
+		location.setDescription("location");
+		location.setLatitude(1.0);
+		location.setLongitude(1.0);
+		location.setAltitude(1.0);
+		location.setTitle("title");
+		
+		Landmark l=landmarkService.create();
+		l.setName("Probando");
+		l.setLndDescription("Description");
+		l.setLocation(location);
+		l.setStage(stage);
+
+		landmarkService.save(l);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an innkeeper must be able to:
+	//Delete his or her landmarks.
+	//With an existing Innkeeper, we want to check if he can delete his own landmark correctly.
+	@Test
+	public void testDeleteKeeper(){
+		authenticate("keeper1");
+		
+		Landmark l=landmarkService.findOne(102);
+		landmarkService.delete(l);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an pilgrim must be able to:
+	//List his or her landmarks.
+	//With an existing pilgrim, we want to check if his landmarks can be find correctly.
+	@Test
+	public void testByActorPilgrim(){
+		authenticate("customer2");
+		Collection<Landmark> all;
+		UserAccount user=LoginService.getPrincipal();
+		Pilgrim p=pilgrimService.findByUserAccount(user);
+		
+		all=landmarkService.findByActor(p.getId());
+		Assert.isTrue(all.size()==1);
+		authenticate(null);
+	}
+	//A user who is authenticated as an pilgrim must be able to:
+	//Create his or her landmarks.
+	//With an existing pilgrim, we want to check if he can create and save a new Landmark correctly.
+	@Test
+	public void testCreateAndSavePilgrim(){
+		authenticate("customer2");
+		
+		Stage stage=stageService.findOne(46);
+		GPS location=new GPS();
+		location.setDescription("location");
+		location.setLatitude(1.0);
+		location.setLongitude(1.0);
+		location.setAltitude(1.0);
+		location.setTitle("title");
+		
+		Landmark l=landmarkService.create();
+		l.setName("Probando");
+		l.setLndDescription("Description");
+		l.setLocation(location);
+		l.setStage(stage);
+
+		landmarkService.save(l);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an pilgrim must be able to:
+	//Delete his or her landmarks.
+	//With an existing pilgrim, we want to check if he can delete his own landmark correctly.
+	@Test
+	public void testDeletePilgrim(){
+		authenticate("customer2");
+		
+		Landmark l=landmarkService.findOne(103);
+		landmarkService.delete(l);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the total number of landmarks.
+	//With an existing Administrator, we want to check if he can count the landmarks correctly
+	@Test
+	public void testGetTotal(){
+		authenticate("admin1");
+		Integer res=landmarkService.getTotal();
+		Assert.notNull(res==2);
+		authenticate(null);
+	}
+	
+	//A user who is authenticate as administrator must be able to:
+	//Display a dashboard with the average number of landmarks per route.
+	//With an existing Administrator, we want to check if he can obtain the values landmarks correctly
+	@Test
+	public void testAvgPerRoute(){
+		authenticate("admin1");
+		Collection<Object[]> avg=landmarkService.avgperRoute();
+		Assert.isTrue(avg.size()==2);
+		authenticate(null);
+	}
+	
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+	//A user who is not authenticated must be able to:
+	//List the landmarks in a stage.
+	//With an existing Stage, we will expect a wrong number of landmarks and catch the exception
+	@Test(expected=IllegalArgumentException.class)
+	public void testByStageException(){
+		Collection<Landmark> all;
+		
+		all=landmarkService.findByStage(49);
+		Assert.isTrue(all.size()==3);
+	}
+	//A user who is authenticated as an innkeeper must be able to:
+	//List his or her landmarks.
+	//With an existing administrator, we will try to find the landmarks and 
+	//capture the exception
+	@Test(expected=NullPointerException.class)
+	public void testByActorKeeperException(){
+		authenticate("admin1");
+		UserAccount user=LoginService.getPrincipal();
+		Innkeeper i=innkeeperService.findByUserAccount(user);
+		
+		Collection<Landmark> all=landmarkService.findByActor(i.getId());
+		Assert.isTrue(all.size()==1);
+	}
+	//A user who is authenticated as an innkeeper must be able to:
+	//Create his or her landmarks.
+	//With an existing administrator, we will try create and save a new Landmark correctly
+	//and capture the exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSaveKeeperException(){
+		authenticate("admin1");
+		
+		Stage stage=stageService.findOne(46);
+		GPS location=new GPS();
+		location.setDescription("location");
+		location.setLatitude(1.0);
+		location.setLongitude(1.0);
+		location.setAltitude(1.0);
+		location.setTitle("title");
+		
+		Landmark l=landmarkService.create();
+		l.setName("Probando");
+		l.setLndDescription("Description");
+		l.setLocation(location);
+		l.setStage(stage);
+
+		landmarkService.save(l);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an innkeeper must be able to:
+	//Delete his or her landmarks.
+	//With an existing administrator, we will try to delete his own landmark and capture
+	//the exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testDeleteKeeperException(){
+		authenticate("admin1");
+		
+		Landmark l=landmarkService.findOne(102);
+		landmarkService.delete(l);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an pilgrim must be able to:
+	//List his or her landmarks.
+	//With an existing administrator, we will try to find all landmarks and capture
+	//the exception.
+	@Test(expected=NullPointerException.class)
+	public void testByActorPilgrimException(){
+		authenticate("admin1");
+		Collection<Landmark> all;
+		UserAccount user=LoginService.getPrincipal();
+		Pilgrim p=pilgrimService.findByUserAccount(user);
+		
+		all=landmarkService.findByActor(p.getId());
+		Assert.isTrue(all.size()==1);
+		authenticate(null);
+	}
+	//A user who is authenticated as an pilgrim must be able to:
+	//Create his or her landmarks.
+	//With an existing administrator, we will try to create and save a new Landmark and
+	//capture the exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testCreateAndSavePilgrimException(){
+		authenticate("admin2");
+		
+		Stage stage=stageService.findOne(46);
+		GPS location=new GPS();
+		location.setDescription("location");
+		location.setLatitude(1.0);
+		location.setLongitude(1.0);
+		location.setAltitude(1.0);
+		location.setTitle("title");
+		
+		Landmark l=landmarkService.create();
+		l.setName("Probando");
+		l.setLndDescription("Description");
+		l.setLocation(location);
+		l.setStage(stage);
+
+		landmarkService.save(l);
+		
+		authenticate(null);
+	}
+	//A user who is authenticated as an pilgrim must be able to:
+	//Delete his or her landmarks.
+	//With an existing administrator, we will try to delete his own landmark and capture the
+	//exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testDeletePilgrimException(){
+		authenticate("admin2");
+		
+		Landmark l=landmarkService.findOne(103);
+		landmarkService.delete(l);
+		
+		authenticate(null);
+	}
+	
+	//A user who is authenticated as an administrator must be able to:
+	//Display a dashboard with the total number of landmarks.
+	//With an existing pilgrim, we will try to count the landmarks and capture the 
+	//exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testGetTotalException(){
+		authenticate("customer0");
+		Integer res=landmarkService.getTotal();
+		Assert.notNull(res==2);
+		authenticate(null);
+	}
+	
+	//A user who is authenticate as administrator must be able to:
+	//Display a dashboard with the average number of landmarks per route.
+	//With an existing pilgrim, we will try to obtain the values and capture the exception.
+	@Test(expected=IllegalArgumentException.class)
+	public void testAvgPerRouteException(){
+		authenticate("customer0");
+		Collection<Object[]> avg=landmarkService.avgperRoute();
+		Assert.isTrue(avg.size()==2);
+		authenticate(null);
+	}
+
+}

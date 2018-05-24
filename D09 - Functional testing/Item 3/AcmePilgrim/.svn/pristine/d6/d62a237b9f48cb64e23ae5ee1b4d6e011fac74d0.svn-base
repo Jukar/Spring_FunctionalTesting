@@ -1,0 +1,147 @@
+package services;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import org.springframework.util.Assert;
+
+import domain.Booking;
+import domain.Invoice;
+import domain.Pilgrim;
+import repositories.InvoiceRepository;
+import security.Authority;
+import security.LoginService;
+import security.UserAccount;
+
+@Service
+@Transactional
+public class InvoiceService {
+	// ------------------- Managed repository --------------------
+	@Autowired
+	private InvoiceRepository invoiceRepository;
+	
+	// ------------------- Supporting services -------------------
+	@Autowired
+	private BookingService bookingService;
+	
+	// ----------------------- Constructor -----------------------
+	// ------------------- Simple CRUD methods -------------------
+	public Invoice findOne(int invoiceId){
+		Invoice result=invoiceRepository.findOne(invoiceId);
+		return result;
+	}
+	
+	public Collection<Invoice> findAll(){
+		Collection<Invoice> result=invoiceRepository.findAll();
+		return result;
+	}
+	
+	public Invoice create(){
+		isKeeper(LoginService.getPrincipal());
+		
+		Invoice result = new Invoice();
+		result.setMoment(new Date());
+		result.setPaidMoment(null);
+		
+		return result;
+	}
+	
+	public void delete(Invoice invoice){
+		invoiceRepository.delete(invoice);
+	}
+	
+	public void save(Invoice invoice){
+		isCustomer(LoginService.getPrincipal());
+		Assert.notNull(invoice);
+		invoiceRepository.save(invoice);
+	}
+	// ----------------- Other business methods ------------------
+	
+
+	public Collection<Invoice> findByPilgrim(int id) {
+		isPilgrimOrAdmin(LoginService.getPrincipal());
+		Collection<Invoice> result=invoiceRepository.findByPilgrim(id);
+		return result;
+	}
+	public Collection<Invoice> findByKeeper(int id) {
+		isKeeperOrAdmin(LoginService.getPrincipal());
+		Collection<Invoice> result=invoiceRepository.findByKeeper(id);
+		return result;
+	}
+	public Collection<Invoice> findByPilgrimNotPaid(int id) {
+		isPilgrimOrAdmin(LoginService.getPrincipal());
+//		List<Invoice> result=new ArrayList<Invoice>();
+//		Collection<Invoice> all=invoiceRepository.findByPilgrim(id);
+//		for(Invoice i:all){
+//			if(i.getPaidMoment()!=null){
+//				result.add(i);
+//			}
+//		}
+		Collection<Invoice> result=invoiceRepository.findNotPaidByPilgrim(id);
+		return result;
+	}
+	public Collection<Invoice> findByKeeperNotPaid(int id) {
+		isKeeperOrAdmin(LoginService.getPrincipal());
+//		Collection<Invoice> all=invoiceRepository.findByKeeper(id);
+//		List<Invoice> result=new ArrayList<Invoice>();
+//		
+//		for(Invoice i:all){
+//			if(i.getPaidMoment()!=null){
+//				result.add(i);
+//			}
+//		}
+		Collection<Invoice> result=invoiceRepository.findNotPaidByKeeper(id);
+		return result;
+	}
+
+	
+	private void isKeeper(UserAccount account) {
+		Collection<Authority> authorities= account.getAuthorities();
+		Boolean res=false;
+		for(Authority a:authorities){
+			if(a.getAuthority().equals("INNKEEPER")) res=true;
+		}
+		Assert.isTrue(res);
+	}
+	private void isPilgrim(UserAccount account) {
+		Collection<Authority> authorities= account.getAuthorities();
+		Boolean res=false;
+		for(Authority a:authorities){
+			if(a.getAuthority().equals("PILGRIM")) res=true;
+		}
+		Assert.isTrue(res);
+	}
+	private void isKeeperOrAdmin(UserAccount account) {
+		Collection<Authority> authorities= account.getAuthorities();
+		Boolean res=false;
+		for(Authority a:authorities){
+			if(a.getAuthority().equals("INNKEEPER")) res=true;
+			if(a.getAuthority().equals("ADMIN")) res=true;
+		}
+		Assert.isTrue(res);
+	}
+	private void isPilgrimOrAdmin(UserAccount account) {
+		Collection<Authority> authorities= account.getAuthorities();
+		Boolean res=false;
+		for(Authority a:authorities){
+			if(a.getAuthority().equals("PILGRIM")) res=true;
+			if(a.getAuthority().equals("ADMIN")) res=true;
+		}
+		Assert.isTrue(res);
+	}
+	private void isCustomer(UserAccount account) {
+		Collection<Authority> authorities= account.getAuthorities();
+		Boolean res=false;
+		for(Authority a:authorities){
+			if(a.getAuthority().equals("PILGRIM")) res=true;
+			if(a.getAuthority().equals("INNKEEPER")) res=true;
+		}
+		Assert.isTrue(res);
+	}
+}

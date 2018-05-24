@@ -1,0 +1,81 @@
+<%@page language="java" contentType="text/html; charset=ISO-8859-1" pageEncoding="ISO-8859-1"%>
+
+<%@taglib prefix="jstl"	uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="spring" uri="http://www.springframework.org/tags"%>
+<%@taglib prefix="form" uri="http://www.springframework.org/tags/form"%>
+<%@taglib prefix="security" uri="http://www.springframework.org/security/tags"%>
+<%@taglib prefix="display" uri="http://displaytag.sf.net"%>
+<%@ taglib prefix="acme" tagdir="/WEB-INF/tags" %>
+
+<form:form action="landmark/edit.do" modelAttribute="landmark">
+	<form:hidden path="id"/>
+	<form:hidden path="version"/>
+	<form:hidden path="actor"/>
+	
+	<form:label path="lndDescription">
+		<spring:message code="landmark.lndDescription"/>
+	</form:label>
+	<form:input path="lndDescription"/>
+	<form:errors cssClass="error" path="lndDescription"/>
+	<br/>
+	
+	
+	<spring:message code="landmark.location" />
+	<form:label path="location.title">
+		<spring:message code="landmark.location.title" />
+	</form:label>
+	<form:input path="location.title"/>
+	<form:errors cssClass="error" path="location.title"/>
+	<br />
+	<form:label path="location.description">
+		<spring:message code="landmark.location.description" />
+	</form:label>
+	<form:input path="location.description"/>
+	<form:errors cssClass="error" path="location.description"/>
+	<br />
+	<form:label path="location.longitude">
+		<spring:message code="landmark.location.longitude" />
+	</form:label>
+	<form:input path="location.longitude"/>
+	<form:errors cssClass="error" path="location.longitude"/>
+	<br />
+	<form:label path="location.latitude">
+		<spring:message code="landmark.location.latitude" />
+	</form:label>
+	<form:input path="location.latitude"/>
+	<form:errors cssClass="error" path="location.latitude"/>
+	<br />
+	<form:label path="location.altitude">
+		<spring:message code="landmark.location.altitude" />
+	</form:label>
+	<form:input path="location.altitude"/>
+	<form:errors cssClass="error" path="location.altitude"/>
+	<br />
+	
+	<form:label path="url">
+		<spring:message code="landmark.url"/>
+	</form:label>
+	<form:input path="url"/>
+	<form:errors cssClass="error" path="url"/>
+	<br/>
+
+	<form:label path="stage"><spring:message code="landmark.stage" /></form:label>
+	<form:select path="stage">
+		<form:option label="----" value="0" />
+		<form:options items="${stages}" itemLabel="name" itemValue="id" />
+		<spring:message code="landmark.stage" />:
+	</form:select>
+	<form:errors cssClass="error" path="stage"/>
+	
+	<acme:submit name="save" code="landmark.save"/>	
+	&nbsp;
+	<security:authorize access="hasRole('PILGRIM')">
+		<input type="button" name="return" value="<spring:message code="landmark.return"/>" 
+		onclick="javascript: window.location.replace('landmark/pilgrim/list.do')"/>
+	</security:authorize>
+	<security:authorize access="hasRole('INNKEEPER')">
+		<input type="button" name="return" value="<spring:message code="landmark.return"/>" 
+		onclick="javascript: window.location.replace('landmark/innkeeper/list.do')"/>
+	</security:authorize>
+	
+</form:form>

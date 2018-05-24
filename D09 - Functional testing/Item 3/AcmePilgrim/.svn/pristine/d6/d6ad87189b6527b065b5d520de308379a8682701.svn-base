@@ -1,0 +1,40 @@
+package services;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.transaction.annotation.Transactional;
+
+import domain.Lodge;
+import domain.Request;
+
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class RequestServiceTest extends AbstractTest{
+	@Autowired
+	private RequestService requestService;
+	@Autowired
+	private LodgeService lodgeService;
+	
+	@Test
+	public void testCreateRequest(){
+		authenticate("keeper1");
+		Request req = requestService.create();
+		req.setTitle("pruebareq");
+		req.setDescription("soy una description");
+		Lodge lodge = lodgeService.create();
+		req.setLodge(lodge);
+		requestService.save(req);
+		System.out.println(req);
+		authenticate(null);
+	}
+}

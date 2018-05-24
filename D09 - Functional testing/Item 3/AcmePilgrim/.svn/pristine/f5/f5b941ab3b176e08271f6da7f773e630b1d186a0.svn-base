@@ -1,0 +1,51 @@
+# messages.properties
+#
+# Copyright (C) 2013 Universidad de Sevilla
+# 
+# The use of this project is hereby constrained to the conditions of the 
+# TDG Licence, a copy of which you may download from 
+# http://www.tdg-seville.info/License.html
+
+dashboard.fieldset1		= Routes in descending order of registrations
+dashboard.fieldset2		= Pilgrims in descending order of registrations
+dashboard.fieldset3		= Routes in ascending order of average rating
+dashboard.fieldset4		= The total number of anecdotes
+dashboard.fieldset5		= The average number of anecdotes per pilgrim
+dashboard.fieldset6		= The pilgrim/s who has/have published more anecdotes
+dashboard.fieldset7		= Rate of complaints per pilgrim
+dashboard.fieldset8		= Pilgrims with more complaints
+
+
+route.name				= Name
+route.actived			= Actived
+route.ratingL			= Length rating
+route.ratingD			= Difficulty rating
+
+pilgrim.name			= Name
+pilgrim.surname			= Surnames
+pilgrim.emailAddress	= Email
+pilgrim.contactPhone	= Phone
+pilgrim.birthDate		= Birth date
+pilgrim.nacionality		= Nacionality
+
+administrator.personalInfo	= Personal info
+
+administrator.name			= Name
+administrator.surname		= Surname
+administrator.emailAddress	= Email address
+administrator.contactPhone	= Contact phone
+administrator.url			= Url
+administrator.birthDate		= Birthdate
+administrator.nationality	= Nationality
+
+administrator.userAccount	= User account
+administrator.userAccount.username = User name
+administrator.userAccount.password = Password
+administrator.userAccount.confirmPassword = Confirm password
+administrator.accepConditions	= I accept the conditions of the service
+administrator.save			= Save
+administrator.cancel		= Cancel
+
+
+
+

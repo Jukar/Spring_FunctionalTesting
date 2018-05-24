@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!-- 
+ * tiles.xml
+ *
+ * Copyright (C) 2013 Universidad de Sevilla
+ * 
+ * The use of this project is hereby constrained to the conditions of the 
+ * TDG Licence, a copy of which you may download from 
+ * http://www.tdg-seville.info/License.html
+ -->
+
+<!DOCTYPE tiles-definitions PUBLIC
+       "-//Apache Software Foundation//DTD Tiles Configuration 2.0//EN"
+       "http://tiles.apache.org/dtds/tiles-config_2_0.dtd">
+       
+<tiles-definitions>
+
+	<definition name="pilgrim/list" extends="master.page">	
+		<put-attribute name="title" value="Registered pilgrims" />
+		<put-attribute name="body" value="/views/pilgrim/list.jsp" />
+	</definition>
+	
+	<definition name="pilgrim/register" extends="master.page">	
+		<put-attribute name="title" value="Pilgrim : Register" />
+		<put-attribute name="body" value="/views/pilgrim/register.jsp" />
+	</definition>
+	
+	<definition name="pilgrim/administrator/profile" extends="master.page">	
+		<put-attribute name="title" value="Profile" />
+		<put-attribute name="body" value="/views/pilgrim/profile.jsp" />
+	</definition>
+
+	<definition name="pilgrim/profile" extends="master.page">	
+		<put-attribute name="title" value="My profile" />
+		<put-attribute name="body" value="/views/pilgrim/profile.jsp" />
+	</definition>
+
+</tiles-definitions>

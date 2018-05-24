@@ -1,0 +1,189 @@
+package services;
+
+import java.util.Collection;
+import java.util.List;
+
+import javax.transaction.Transactional;
+
+import org.hibernate.DuplicateMappingException;
+import org.hibernate.annotations.common.AssertionFailure;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.util.AssertionErrors;
+import org.springframework.util.Assert;
+
+import repositories.ComplaintRepository;
+
+import com.mchange.util.DuplicateElementException;
+
+import domain.Complaint;
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class ComplaintServiceTest extends AbstractTest{
+	@Autowired
+	private ComplaintService complaintService;
+//	A user who is authenticated as a pilgrim must be able to:
+	
+//	Create a complaint, which is immediately set as open.
+	@Test
+	public void testCreatePilgrim(){
+		authenticate("customer1");
+		Complaint complaint=complaintService.create();
+		complaint.setTitle("aaaaaaa");
+		complaint.setDescription("asfasdsaas");
+		complaint.setResolution("asfafsadsads");
+		complaintService.saveCreate(complaint);
+		authenticate(null);
+	}
+	//Trying with an Inkeeper
+	@Test(expected= IllegalArgumentException.class)
+	public void testCreateInkeeper(){
+		authenticate("keeper1");
+		Complaint complaint=complaintService.create();
+		complaint.setTitle("adsadsadadadsa");
+		complaint.setDescription("asfasdsaas");
+		complaint.setResolution("asfafsadsads");
+		complaintService.saveCreate(complaint);
+		authenticate(null);
+	}
+	//Trying with an Admin
+	@Test(expected= IllegalArgumentException.class)
+	public void testCreateAdmin(){
+		authenticate("admin1");
+		Complaint complaint=complaintService.create();
+		complaint.setTitle("aaaaaaa");
+		complaint.setDescription("asfasdsaas");
+		complaint.setResolution("asfafsadsads");
+		complaintService.saveCreate(complaint);
+		authenticate(null);
+	}
+	//Trying duplicate creation
+	@Test(expected= DuplicateElementException.class)
+	public void testCreateDuplicade(){
+		authenticate("customer1");
+		Complaint complaint=complaintService.create();
+		complaint.setTitle("aaaaaaa");
+		complaint.setDescription("asfasdsaas");
+		complaint.setResolution("asfafsadsads");
+		complaintService.saveCreate(complaint);
+		complaintService.saveCreate(complaint);
+		authenticate(null);
+	}
+//		Comment on his or her complaints. -->Discuss test
+	
+	
+//	Cancel a complaint that he or she's created. Once a complaint is cancelled, no
+//		further discussions are accepted
+	//Cancel one that he or she's not created
+	@Test(expected= IllegalArgumentException.class)
+	public void testCancelPilgrimNotCreated(){
+		authenticate("customer0");
+		Complaint result=complaintService.findOne(66);
+		complaintService.cancel(result);
+		authenticate(null);
+	}
+	//Cancell one that he or she's created
+	@Test
+	public void testCancelPilgrimCreated(){
+		authenticate("customer1");
+		Complaint result=complaintService.findOne(66);
+		complaintService.cancel(result);
+		authenticate(null);
+	}
+	
+//	A user who is authenticated as an administrator must be able to:
+//		-List the complaints in the system.
+	@Test
+	public void testFindAllAdmin(){
+		authenticate("admin1");
+		Collection<Complaint> result=complaintService.findAll();
+		Assert.isTrue(result.size()==3);
+		authenticate(null);
+	}
+	//Trying with a Pilgrim
+	@Test(expected= IllegalArgumentException.class)
+	public void testFindAllPilgrim(){
+		authenticate("customer1");
+		Collection<Complaint> result=complaintService.findAll();
+		authenticate(null);
+	}
+//		-Select a complaint so that he or she can handle it. Obviously, the selected complaint
+//		cannot be already assigned to another administrator.
+	@Test
+	public void testHandleAdmin(){
+		authenticate("admin1");
+		Complaint result=complaintService.findOne(69);
+		complaintService.handle(result);
+		authenticate(null);
+	}
+//	The selected complaint cannot be already assigned to another administrator.
+	@Test(expected= IllegalArgumentException.class)
+	public void testHandleAdminHandled(){
+		authenticate("admin1");
+		Complaint result=complaintService.findOne(66);
+		complaintService.handle(result);
+		authenticate(null);
+	}	
+//	The selected complaint cannot be handle by a pilgrim.
+	@Test(expected= IllegalArgumentException.class)
+	public void testHandlePilgrim(){
+		authenticate("customer1");
+		Complaint result=complaintService.findOne(66);
+		complaintService.handle(result);
+		authenticate(null);
+	}
+//		-Comment on a complaint that he or she handles.-->Test Discuss
+
+//		-Close a complaint that he or she handles. Once a complaint is closed, no further
+//		discussions are accepted.
+	@Test
+	public void testCloseHandled(){
+		authenticate("admin2");
+		Complaint result=complaintService.findOne(66);
+		complaintService.close(result);
+		authenticate(null);
+	}
+//	The selected complaint cannot be close if you don't handle it.
+	@Test(expected= IllegalArgumentException.class)
+	public void testCloseNotHandled(){
+		authenticate("admin1");
+		Complaint result=complaintService.findOne(66);
+		complaintService.close(result);
+		authenticate(null);
+	}
+//	The selected complaint cannot be close by a pilgrim.
+	@Test(expected= IllegalArgumentException.class)
+	public void testClosePilgrim(){
+		authenticate("customer1");
+		Complaint result=complaintService.findOne(66);
+		complaintService.close(result);
+		authenticate(null);
+	}
+//		Display a dashboard with the following information:
+//		-List the ratio of complaints per pilgrim.
+	@Test
+	public void testComplainRatioAdmin(){
+		authenticate("admin1");
+		Double result=complaintService.avrComplaint();
+		authenticate(null);
+	}
+	@Test(expected= IllegalArgumentException.class)
+	public void testComplainRatioPilgrim(){
+		authenticate("pilgrim1");
+		Double result=complaintService.avrComplaint();
+		authenticate(null);
+	}
+//		-List the pilgrim/s who have created more complaints. -->PilgrimTest
+	
+}	

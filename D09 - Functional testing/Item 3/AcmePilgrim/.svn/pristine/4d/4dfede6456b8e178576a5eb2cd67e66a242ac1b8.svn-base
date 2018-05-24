@@ -1,0 +1,21 @@
+package repositories;
+
+import java.util.Collection;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.stereotype.Repository;
+import domain.Booking;
+
+@Repository
+public interface BookingRepository extends JpaRepository<Booking,Integer>{
+	
+	//TODO esto no es ByInnkeeperId??? y ByPilgrimId???
+	@Query("select b from Booking b where b.lodge.innkeeper.id = ?1")
+	Collection<Booking> findByBookingAndInnkeeperId(int innKeeperId);
+	
+	@Query("select b from Booking b where b.pilgrim.id = ?1")
+	Collection<Booking> findByBookingAndPilgrimId(int pilgrimId);
+	
+	@Query("select b from Booking b where b.pilgrim.id = ?1 order by b.arrivalDate asc")
+	Collection<Booking> findByInnkeeperIdAndOrderedByArrivalDate(int innkeeperId);
+}

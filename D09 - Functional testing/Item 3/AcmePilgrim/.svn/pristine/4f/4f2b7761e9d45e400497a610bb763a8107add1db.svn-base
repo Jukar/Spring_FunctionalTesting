@@ -1,0 +1,71 @@
+package services;
+
+import java.util.Collection;
+import java.util.Date;
+
+import javax.transaction.Transactional;
+
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.transaction.TransactionConfiguration;
+import org.springframework.util.Assert;
+
+import domain.Complaint;
+import domain.Discuss;
+
+import utilities.AbstractTest;
+
+@RunWith(SpringJUnit4ClassRunner.class)
+@ContextConfiguration(locations={
+		"classpath:spring/datasource.xml",
+		"classpath:spring/config/packages.xml"})
+@Transactional
+@TransactionConfiguration(defaultRollback = true)
+public class DiscussServiceTest extends AbstractTest{
+	@Autowired
+	private DiscussService discussService;
+	@Autowired
+	private ComplaintService complaintService;
+	
+	//----------------------------------------------------
+	// POSITIVE TEST CASES
+	//----------------------------------------------------
+	@Test
+	public void testFindOne(){
+		Discuss discuss=discussService.findOne(63);
+		Assert.isTrue(discuss.getActor().getId()==39);
+	}
+	@Test
+	public void testFindAll(){
+		Collection<Discuss> all=discussService.findAll();
+		Assert.isTrue(all.size()==5);
+	}
+	@Test
+	public void testCreateAndSave(){
+		authenticate("customer3");
+		
+		Complaint complaint=complaintService.findOne(66);
+		Discuss d=discussService.create(complaint);
+		
+		d.setMessage("Message");
+		d.setMomentDiscuss(new Date());
+		discussService.save(d);
+		
+		authenticate(null);
+	}
+	@Test
+	public void testDelete(){
+		authenticate("customer1");
+		
+		Discuss discuss=discussService.findOne(67);
+		discussService.delete(discuss);
+		
+		authenticate(null);
+	}
+	//----------------------------------------------------
+	// NEGATIVE TEST CASES
+	//----------------------------------------------------
+}

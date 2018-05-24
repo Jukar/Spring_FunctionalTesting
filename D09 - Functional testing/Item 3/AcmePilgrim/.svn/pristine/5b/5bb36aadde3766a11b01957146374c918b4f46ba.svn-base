@@ -1,0 +1,139 @@
+package controllers.innkeeper;
+
+import java.util.Collection;
+
+import javax.validation.Valid;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.util.Assert;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.servlet.ModelAndView;
+
+import security.LoginService;
+import security.UserAccount;
+import services.ActorService;
+import services.LandmarkService;
+import services.StageService;
+
+import controllers.AbstractController;
+import domain.Actor;
+import domain.Landmark;
+import domain.Stage;
+@Controller
+@RequestMapping("/landmark/innkeeper")
+public class LandmarkInnkeeperController extends AbstractController {
+	//Services-----------------------
+	@Autowired
+	private LandmarkService landmarkService;
+	@Autowired
+	private StageService stageService;
+	@Autowired
+	private ActorService actorService;
+		
+	//Listing------------------------
+	@RequestMapping("/list")
+	public ModelAndView listAll() {
+		ModelAndView result;
+		UserAccount usAc=LoginService.getPrincipal();
+		Actor you=actorService.findByUserAccount(usAc);
+		
+		Collection<Landmark> landmarks;
+		landmarks=landmarkService.findByActor(you.getId());
+		String requestURI="landmark/innkeeper/list.do";
+			
+		result = new ModelAndView("landmark/list");
+		result.addObject("landmarks",landmarks);
+		result.addObject("requestURI", requestURI);
+		return result;
+	}
+	
+	// Creation -----------------------------------------------------------
+	@RequestMapping(value= "/create", method = RequestMethod.GET )
+	public ModelAndView create(){
+		ModelAndView result;
+		Landmark landmark;
+	
+		landmark=landmarkService.create();
+		Assert.notNull(landmark);
+		result=createEditModelAndView(landmark);
+				
+		return result;
+	}
+	
+	//	Save ------------------------------------------------------------
+	@RequestMapping(value="/edit",method=RequestMethod.POST,params="save")		
+	public ModelAndView save(@Valid Landmark landmark, BindingResult binding){
+		ModelAndView result;
+		
+		if(binding.hasErrors()){
+			result=createEditModelAndView(landmark);
+		} else{
+			try{
+				landmarkService.save(landmark);
+				result=new ModelAndView("redirect:/list.do");
+			} catch(Throwable oops){
+				result=createEditModelAndView(landmark,"invoice.commit.error");
+			}
+		}
+		return result;
+	}
+	
+	
+	//	Edition ---------------------------------------------------------------
+	@RequestMapping(value = "/edit", method = RequestMethod.GET)
+	public ModelAndView edit(@RequestParam int landmarkId){
+		ModelAndView result;
+		Landmark landmark;
+		
+		landmark = landmarkService.findOne(landmarkId);
+		Assert.notNull(landmark);
+		result = createEditModelAndView(landmark);
+		
+		return result;
+	}
+
+	@RequestMapping(value = "/edit", method = RequestMethod.POST, params = "delete")
+	public ModelAndView delete(Landmark landmark, BindingResult binding){
+		ModelAndView result;
+		
+		try{
+			landmarkService.delete(landmark);
+			result = new ModelAndView("redirect:list.do");
+		}catch(Throwable oops){
+			result = createEditModelAndView(landmark, "landmark.commit.error");
+		}
+		
+		return result;
+	}
+	
+	
+	// Ancillary methods
+	protected ModelAndView createEditModelAndView(Landmark landmark){
+		ModelAndView result;
+		result=createEditModelAndView(landmark,null);		
+		return result;
+	}
+			
+	protected ModelAndView createEditModelAndView(Landmark landmark, String message){
+		ModelAndView result;
+		Actor actor;
+		Collection<Stage> stages;
+		
+		actor=landmark.getActor();
+		stages=stageService.findAll();
+						
+		landmark.setActor(actor);
+				
+		result=new ModelAndView("landmark/edit");
+		result.addObject("landmark", landmark);
+		result.addObject("stages",stages);
+		result.addObject("actor",actor);
+		result.addObject("requestURI","landmark/innkeeper/edit");
+		
+		return result;
+	}
+}
